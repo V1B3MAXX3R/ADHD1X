@@ -3,6 +3,12 @@
 Part of ADHD1X. Files: CatchUpPage.tsx, catchUp.ts, useCatchUp.ts, components/ (ModeSwitch, GradeCalculator, PacePicker, DueSoonestQueue)
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-14 - Grades import panel
+- Made by: Claude
+- Changed: Added the Bring in grades from Canvas section above the grade calculator.
+- Why: Christian asked to import his grades from Canvas with a secure pathway, preferably in Python. Decision F3 (Canvas API) was deferred, so this was built as a separate local tool plus a file import, not a website feature that talks to Canvas.
+- Notes: See the grades changelog.
+
 ## 2026-10-13 - First version
 - Made by: Claude (from Gemini's Bucket 2 Part 2 files)
 - Changed: New page at `/catch-up` ("Hyperdrive" in Space style, "Catch-up mode" in Regular style, A56). It has the on/off switch, a target-grade calculator (quick Canvas percent, or points from each assignment), three paces with the real number of days each takes (A81), and a Due soonest list that includes unfinished work from earlier dates (A39, A40). All grade math is plain code in `catchUp.ts` and never goes to Gemini (A36).

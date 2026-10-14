@@ -172,7 +172,7 @@ export const AssignmentSchema = z.object({
   notNow: z.boolean().default(false),
   addedLate: z.boolean().default(false),
   note: z.string().max(280).optional(), // "Where was I?" note (A62). Stays on this device, never sent to Gemini.
-  source: z.enum(['syllabus', 'manual', 'calendar']),
+  source: z.enum(['syllabus', 'manual', 'calendar', 'canvas']),
   calendarId: z.string().optional(),
   createdAt: z.string(),
   completedAt: z.string().optional(),

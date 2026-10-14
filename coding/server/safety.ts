@@ -10,3 +10,6 @@ export const CLINICIAN_REDIRECT_LINE =
 export function containsMedicalAdvice(text: string): boolean {
   return MEDICAL_ADVICE_PATTERNS.some((re) => re.test(text));
 }
+
+// A short access code can be guessed, so the endpoint treats a code shorter than this as "not set up".
+export const MIN_ACCESS_CODE_LENGTH = 16;

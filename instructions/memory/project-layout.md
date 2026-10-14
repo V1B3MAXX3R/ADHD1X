@@ -7,7 +7,7 @@ metadata:
 
 **Folders:** `research/`, `instructions/` (decision log, blueprint, spec, this memory), `artifacts/` (version and doc map), and `coding/` (the app).
 
-**Inside `coding/`:** `src/app` (routes, shared state), `src/features/<part>` (one folder per part: today, courses, assignments, calendar, voyage, catchUp, memory, gemini (all Gemini screens), focus (parking lot, calm mode, ramp-in, one-tap start), planning (energy check, long days, recovery gaps, reading time, done-list), tips (tips library, syllabus phrases), routines, ui (Cosmos pulp-comic view at /cosmos), quiz, onboarding, settings, help, helpMeStart, catalog), `src/shared` (components, data, ai, clock, space, logic, styles), `server/` and `api/` (Gemini, server only), `tests/` (unit, e2e, fixtures).
+**Inside `coding/`:** `src/app` (routes, shared state), `src/features/<part>` (one folder per part: today, courses, assignments, calendar, voyage, catchUp, memory, gemini (all Gemini screens), focus (parking lot, calm mode, ramp-in, one-tap start), planning (energy check, long days, recovery gaps, reading time, done-list), tips (tips library, syllabus phrases), routines, ui (Cosmos pulp-comic view at /cosmos), quiz, onboarding, settings, help, helpMeStart, catalog), `src/shared` (components, data, ai, clock, space, logic, styles), `server/` and `api/` (Gemini, server only), `tools/canvas_grades/` (Python tool that saves your Canvas grades to a file; grades import lives in `src/features/grades`), `tests/` (unit, e2e, fixtures).
 
 **Gemini:** the browser calls `src/shared/ai/client.ts`, which calls `api/ai/[preset].ts` (prompts in `server/promptBuilders.ts`). `npm run dev` serves that endpoint through `server/devApiPlugin.ts`; keys come from `.env` and stay on the server.
 

@@ -30,7 +30,4 @@ Copy `.env.example` to `.env` and fill in `GEMINI_API_KEY` and `ACCESS_CODE` for
 
 The main changelog is [CHANGELOG.md](CHANGELOG.md), and every part folder has its own `CHANGELOG.md`. Every code change gets an entry (decision A17).
 
-
-
-
-
+Security notes, a checklist and what to do if a secret leaks: [SECURITY.md](SECURITY.md).

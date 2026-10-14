@@ -447,6 +447,116 @@ test.describe('ADHD1X end-to-end and WCAG 2.2 AA accessibility (P16)', () => {
     await expect(page.locator('html')).toHaveAttribute('data-look', 'normal');
   });
 
+  test('calendar: importing with no courses creates the courses named in the file and adds the assignments', async ({ page }) => {
+    await page.goto('/welcome');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByLabel("I'm 18 or older (required)").check();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Skip remaining questions' }).click();
+    await page.getByRole('button', { name: 'Skip for now' }).click();
+    await page.getByRole('button', { name: 'Skip to Today' }).click();
+    await expect(page.locator('h1')).toContainText('Today');
+    await page.evaluate(() => {
+      window.history.pushState({}, '', '/calendar');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    const longTitle = 'Final research paper on the history of the printing press and its effects on literacy across early modern Europe with a bibliography';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT', 'UID:event-assignment-1', 'SUMMARY:Week 3 Quiz [ENG 1A]', 'DTSTART;VALUE=DATE:20991020', 'END:VEVENT',
+      'BEGIN:VEVENT', 'UID:event-assignment-2', `SUMMARY:${longTitle} [CIS 101]`, 'DTSTART;VALUE=DATE:20991021', 'END:VEVENT',
+      'BEGIN:VEVENT', 'UID:event-assignment-3', 'SUMMARY:Reading response', 'DTSTART;VALUE=DATE:20991022', 'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    await page.getByText('Or paste the calendar text').click();
+    await page.locator('#ics-text').fill(ics);
+    await page.getByRole('button', { name: 'Read this text' }).click();
+
+    // The preview says what will happen before anything is saved.
+    await expect(page.getByText(/New courses?: ENG 1A, CIS 101/)).toBeVisible();
+    await expect(page.getByText(/2 assignments will be added/)).toBeVisible();
+    await expect(page.getByText(/1 name no course/)).toBeVisible();
+    const save = page.getByRole('button', { name: /Save 3 items and add 2 to my assignments/ });
+    await expect(save).toBeVisible();
+    const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+    expect(r.violations).toEqual([]);
+    await save.click();
+
+    await expect(page.getByText(/Added 2 assignments to your study plan and created the courses ENG 1A, CIS 101/)).toBeVisible();
+    // The one with no course is still offered, not guessed.
+    await expect(page.getByText('Add a course first, then you can add this').or(page.getByLabel('Course:')).first()).toBeVisible();
+
+    // The assignments exist, with the long title cut to fit, and a backup of them can be re-imported.
+    await page.evaluate(() => {
+      window.history.pushState({}, '', '/assignments');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await expect(page.getByText('Week 3 Quiz')).toBeVisible();
+    await expect(page.getByText(longTitle.slice(0, 120))).toBeVisible();
+    await page.evaluate(() => {
+      window.history.pushState({}, '', '/settings/privacy');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /Export my data/ }).click()]);
+    const path = await download.path();
+    await page.locator('input[type=file][accept*="json"]').setInputFiles(path!);
+    await expect(page.getByText(/Ready to import 2 assignments and 2 courses/)).toBeVisible();
+  });
+
+  test('grades: a file from the Canvas tool is previewed, then saved, and Catch Up uses it', async ({ page }) => {
+    await page.goto('/welcome');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByLabel("I'm 18 or older (required)").check();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Skip remaining questions' }).click();
+    await page.getByRole('button', { name: 'Skip for now' }).click();
+    await page.getByRole('button', { name: 'Skip to Today' }).click();
+    await expect(page.locator('h1')).toContainText('Today');
+    await page.evaluate(() => {
+      window.history.pushState({}, '', '/catch-up');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    const item = (id: number, name: string, extra: Record<string, unknown>) => ({
+      canvasAssignmentId: id, name, dueAt: '2026-10-05T12:00:00Z', pointsPossible: 20, score: null, state: 'unsubmitted', countsInFinalGrade: true, ...extra,
+    });
+    const gradesFile = {
+      format: 'ADHD1X-canvas-grades', formatVersion: 1, fetchedAt: '2026-10-14T16:30:00Z', source: 'canvas.example.edu',
+      courses: [{
+        canvasCourseId: 11, name: 'Introduction to Computer Science', courseCode: 'CIS-101-4827', term: 'Fall 2026',
+        currentScore: 85, currentGrade: 'B',
+        assignments: [
+          item(1, 'Quiz 1', { score: 18, state: 'graded' }),
+          item(2, 'Quiz 2', { score: 16, state: 'graded' }),
+          item(3, 'Final exam', { pointsPossible: 60, dueAt: '2099-12-10T12:00:00Z' }),
+        ],
+      }],
+    };
+
+    // A file that is not from the tool is refused in words.
+    await page.locator('#grades-file').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{"hello":1}') });
+    await expect(page.getByRole('alert')).toContainText('does not look like one made by the Canvas grades tool');
+
+    await page.locator('#grades-file').setInputFiles({ name: 'canvas-grades.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(gradesFile)) });
+    await expect(page.getByText('Introduction to Computer Science', { exact: false }).first()).toBeVisible();
+    const courseBox = page.getByLabel(/Introduction to Computer Science/);
+    await expect(courseBox).toBeChecked(); // a course with graded work starts ticked
+    await courseBox.uncheck();
+    await expect(page.getByRole('button', { name: 'Save grades' })).toBeDisabled(); // nothing chosen, nothing to save
+    await courseBox.check();
+    await expect(page.getByText(/2 graded assignments will be added/)).toBeVisible();
+    await expect(page.getByText(/New courses: CIS-101-4827/)).toBeVisible();
+    await expect(page.getByText(/1 not graded yet and not in your list/)).toBeVisible();
+    const scan = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+    expect(scan.violations).toEqual([]);
+    await page.getByRole('button', { name: 'Save grades' }).click();
+    await expect(page.getByText(/Saved. Updated 0 assignments and added 2 graded ones/)).toBeVisible();
+
+    // The grades are now on the assignments, and Catch Up can do math with them.
+    await expect(page.getByText(/All 40 points are already graded/)).toBeVisible();
+  });
+
   test('catalog page passes axe-core WCAG 2.2 AA checks in all 4 palettes', async ({ page }) => {
     await page.goto('/catalog');
     const palettes = ['Space Palette', 'Low (Light) Palette', 'Low (Dim) Palette', 'Standard (Light) Palette'];

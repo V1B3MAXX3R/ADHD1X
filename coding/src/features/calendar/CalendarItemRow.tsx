@@ -9,6 +9,7 @@ import {
   formatTime12h,
   matchCourse,
 } from './calendarLogic';
+import { describeAdd, useCalendarAdd } from './useCalendarAdd';
 
 export const CalendarItemRow: React.FC<{
   item: CalendarItem;
@@ -16,6 +17,7 @@ export const CalendarItemRow: React.FC<{
   onMessage: (text: string) => void;
 }> = ({ item, showDate = false, onMessage }) => {
   const { courses, assignments, upsertAssignment, saveCalendarBatch } = useApp();
+  const { commitAndSave } = useCalendarAdd();
   const existing = findExistingAssignment(item, assignments);
   const matched = matchCourse(item.courseName, courses);
   const [courseId, setCourseId] = useState(matched?.id ?? courses[0]?.id ?? '');
@@ -35,6 +37,14 @@ export const CalendarItemRow: React.FC<{
     await upsertAssignment(assignment);
     await saveCalendarBatch([{ ...item, status: 'added', isNew: false, assignmentId: assignment.id }]);
     onMessage(`Added "${item.title}" to your assignments. It is now part of your study plan.`);
+    setBusy(false);
+  };
+
+  // The calendar names a course that is not in your courses yet: create it and add this assignment.
+  const addWithNewCourse = async () => {
+    setBusy(true);
+    const { plan } = await commitAndSave([item]);
+    onMessage(describeAdd(plan));
     setBusy(false);
   };
 
@@ -71,44 +81,58 @@ export const CalendarItemRow: React.FC<{
 
       {canAdd && (
         <div className="flex flex-wrap items-center gap-2">
-          {courses.length === 0 ? (
+          {item.courseName && !matched && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void addWithNewCourse()}
+              className="min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
+            >
+              Create course &ldquo;{item.courseName}&rdquo; and add this
+            </button>
+          )}
+          {courses.length === 0 && !item.courseName ? (
             <Link to="/setup/courses" className="underline min-h-[44px] flex items-center text-sm">
               Add a course first, then you can add this
             </Link>
           ) : (
-            <>
-              <label htmlFor={`course-${item.id}`} className="text-sm font-medium">
-                Course:
-              </label>
-              <select
-                id={`course-${item.id}`}
-                value={courseId}
-                onChange={(e) => setCourseId(e.target.value)}
-                className="min-h-[44px] px-3 py-1 rounded border border-border bg-surface text-text"
-              >
-                {courses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void add()}
-                className="min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
-              >
-                Add to my assignments
-              </button>
-              <button
-                type="button"
-                onClick={() => void hide()}
-                className="min-h-[44px] px-3 py-2 rounded border border-border bg-surface text-text text-sm"
-              >
-                Hide
-              </button>
-            </>
+            courses.length > 0 && (
+              <>
+                <label htmlFor={`course-${item.id}`} className="text-sm font-medium">
+                  {item.courseName && !matched ? 'Or use a course you have:' : 'Course:'}
+                </label>
+                <select
+                  id={`course-${item.id}`}
+                  value={courseId}
+                  onChange={(e) => setCourseId(e.target.value)}
+                  className="min-h-[44px] px-3 py-1 rounded border border-border bg-surface text-text"
+                >
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void add()}
+                  className={`min-h-[44px] px-4 py-2 rounded font-medium ${
+                    item.courseName && !matched ? 'border border-border bg-surface text-text' : 'bg-accent text-on-accent'
+                  }`}
+                >
+                  Add to my assignments
+                </button>
+              </>
+            )
           )}
+          <button
+            type="button"
+            onClick={() => void hide()}
+            className="min-h-[44px] px-3 py-2 rounded border border-border bg-surface text-text text-sm"
+          >
+            Hide
+          </button>
         </div>
       )}
     </li>

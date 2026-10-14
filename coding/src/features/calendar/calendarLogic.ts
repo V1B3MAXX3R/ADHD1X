@@ -59,7 +59,12 @@ export function mergeImport(
   return { items, created, updated };
 }
 
-export function findExistingAssignment(item: CalendarItem, assignments: Assignment[]): Assignment | undefined {
+export type PlanItem = Pick<CalendarItem, 'id' | 'title' | 'courseName' | 'kind' | 'date' | 'time' | 'description'>;
+
+export function findExistingAssignment(
+  item: Pick<CalendarItem, 'id' | 'title' | 'date'>,
+  assignments: Assignment[],
+): Assignment | undefined {
   const name = item.title.trim().toLowerCase();
   return assignments.find(
     (a) => a.calendarId === item.id || (a.dueDate === item.date && a.name.trim().toLowerCase() === name),
@@ -119,8 +124,11 @@ export function getUpcomingByDay(items: CalendarItem[], today: string, days = UP
   return groups;
 }
 
+// Assignment names are limited to 120 characters; calendar titles can be longer (up to 200).
+export const MAX_ASSIGNMENT_NAME = 120;
+
 export function buildAssignmentFromItem(
-  item: CalendarItem,
+  item: Pick<CalendarItem, 'id' | 'title' | 'date' | 'time' | 'description'>,
   courseId: string,
   createdAt: string,
   id: string,
@@ -129,7 +137,7 @@ export function buildAssignmentFromItem(
   return {
     id,
     courseId,
-    name: item.title,
+    name: item.title.trim().slice(0, MAX_ASSIGNMENT_NAME),
     type,
     dueDate: item.date,
     dueTime: item.time,
@@ -161,4 +169,54 @@ export function formatTime12h(time: string | undefined): string {
   const suffix = h >= 12 ? 'pm' : 'am';
   const h12 = h % 12 === 0 ? 12 : h % 12;
   return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
+}
+
+export interface CalendarAddPlan {
+  /** Courses to create, because the calendar names them and none of yours match. */
+  newCourses: Course[];
+  /** Assignments to add, each with the calendar item it came from. */
+  additions: { item: PlanItem; assignment: Assignment }[];
+  /** Assignments whose calendar entry names no course. They stay in the list to add by hand. */
+  needCourse: PlanItem[];
+  /** Assignments that are already in your assignments. */
+  alreadyIn: number;
+}
+
+const normName = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+// Works out what "add these assignments" would do, without changing anything.
+// Only assignments are considered (events never become assignments), and only when the calendar names a course.
+export function planCalendarAdd(
+  items: PlanItem[],
+  courses: Course[],
+  assignments: Assignment[],
+  makeId: () => string,
+  createdAt: string,
+): CalendarAddPlan {
+  const known: Course[] = [...courses];
+  const newCourses: Course[] = [];
+  const additions: CalendarAddPlan['additions'] = [];
+  const needCourse: PlanItem[] = [];
+  let alreadyIn = 0;
+
+  for (const item of items) {
+    if (item.kind !== 'assignment') continue;
+    if (findExistingAssignment(item, assignments)) {
+      alreadyIn++;
+      continue;
+    }
+    const wanted = item.courseName?.trim().slice(0, 120);
+    if (!wanted) {
+      needCourse.push(item);
+      continue;
+    }
+    let course = matchCourse(wanted, known) ?? known.find((c) => normName(c.name) === normName(wanted));
+    if (!course) {
+      course = { id: makeId(), name: wanted, isMajor: false, createdAt };
+      known.push(course);
+      newCourses.push(course);
+    }
+    additions.push({ item, assignment: buildAssignmentFromItem(item, course.id, createdAt, makeId()) });
+  }
+  return { newCourses, additions, needCourse, alreadyIn };
 }

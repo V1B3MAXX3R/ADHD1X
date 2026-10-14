@@ -1,7 +1,15 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useApp, getTodayDateString } from '../../app/AppContext';
 import { parseIcs, ParsedCalendarEntry } from './icsParser';
-import { entryIsInTheFuture, formatDayHeading, formatTime12h, MAX_CALENDAR_FILE_BYTES, mergeImport } from './calendarLogic';
+import {
+  entryIsInTheFuture,
+  formatDayHeading,
+  formatTime12h,
+  MAX_CALENDAR_FILE_BYTES,
+  mergeImport,
+  planCalendarAdd,
+} from './calendarLogic';
+import { describeAdd, useCalendarAdd } from './useCalendarAdd';
 
 interface Preview {
   entries: ParsedCalendarEntry[];
@@ -10,12 +18,26 @@ interface Preview {
 }
 
 export const ImportPanel: React.FC<{ onMessage: (text: string) => void }> = ({ onMessage }) => {
-  const { calendarItems, saveCalendarBatch } = useApp();
+  const { calendarItems, saveCalendarBatch, courses, assignments } = useApp();
+  const { commit } = useCalendarAdd();
+  // On by default because the person asked for it. Nothing happens until they tap Save (A4).
+  const [autoAdd, setAutoAdd] = useState(true);
   const [pasted, setPasted] = useState('');
   const [error, setError] = useState('');
   const [preview, setPreview] = useState<Preview | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const storedById = useMemo(() => new Map(calendarItems.map((c) => [c.id, c])), [calendarItems]);
+
+  // What saving would do, shown before anything is saved.
+  const previewPlan = useMemo(() => {
+    if (!preview || !autoAdd) return null;
+    const picked = preview.entries
+      .filter((e) => selected.has(e.uid) && e.kind === 'assignment' && storedById.get(e.uid)?.status !== 'hidden')
+      .map((e) => ({ id: e.uid, title: e.title, courseName: e.courseName, kind: e.kind, date: e.date, time: e.time, description: e.description }));
+    return planCalendarAdd(picked, courses, assignments, () => 'preview', 'preview');
+  }, [preview, autoAdd, selected, storedById, courses, assignments]);
 
   const readText = (text: string) => {
     setError('');
@@ -59,15 +81,24 @@ export const ImportPanel: React.FC<{ onMessage: (text: string) => void }> = ({ o
     if (!preview) return;
     const picked = preview.entries.filter((e) => selected.has(e.uid));
     const { items, created, updated } = mergeImport(calendarItems, picked, new Date().toISOString());
-    await saveCalendarBatch(items);
+    let toSave = items;
+    let addNote = '';
+    if (autoAdd) {
+      // Only assignments you have not already added or hidden are considered.
+      const open = items.filter((i) => i.kind === 'assignment' && i.status === 'open');
+      const result = await commit(open);
+      const byId = new Map(result.updated.map((i) => [i.id, i]));
+      toSave = items.map((i) => byId.get(i.id) ?? i);
+      if (result.plan.additions.length > 0 || result.plan.needCourse.length > 0) addNote = ' ' + describeAdd(result.plan);
+    }
+    await saveCalendarBatch(toSave);
     onMessage(
-      `Saved ${picked.length} calendar item${picked.length === 1 ? '' : 's'} (${created} new, ${updated} already here and refreshed).`,
+      `Saved ${picked.length} calendar item${picked.length === 1 ? '' : 's'} (${created} new, ${updated} already here and refreshed).${addNote}`,
     );
     setPreview(null);
     setPasted('');
     if (fileRef.current) fileRef.current.value = '';
   };
-
   return (
     <section aria-labelledby="import-heading" className="p-4 rounded border border-border bg-surface space-y-4">
       <h2 id="import-heading" className="text-xl font-bold">
@@ -189,6 +220,40 @@ export const ImportPanel: React.FC<{ onMessage: (text: string) => void }> = ({ o
               ))}
             </ul>
           )}
+          <div className="p-3 rounded border border-border bg-bg space-y-2 text-sm">
+            <label className="flex items-start gap-3 min-h-[44px] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={autoAdd}
+                onChange={(e) => setAutoAdd(e.target.checked)}
+                className="mt-1 w-5 h-5"
+              />
+              <span>
+                <span className="font-medium">Also add the ticked assignments to my assignments</span>
+                <span className="block text-muted">
+                  Courses named in the calendar are created for you. Added assignments become part of your study plan.
+                </span>
+              </span>
+            </label>
+            {previewPlan && (
+              <ul className="list-disc list-inside text-muted">
+                {previewPlan.additions.length > 0 && (
+                  <li>
+                    {previewPlan.additions.length} assignment{previewPlan.additions.length === 1 ? '' : 's'} will be added
+                  </li>
+                )}
+                {previewPlan.newCourses.length > 0 && (
+                  <li>New course{previewPlan.newCourses.length === 1 ? '' : 's'}: {previewPlan.newCourses.map((c) => c.name).join(', ')}</li>
+                )}
+                {previewPlan.alreadyIn > 0 && <li>{previewPlan.alreadyIn} already in your assignments</li>}
+                {previewPlan.needCourse.length > 0 && (
+                  <li>
+                    {previewPlan.needCourse.length} name no course. They stay in the list and you can add them yourself.
+                  </li>
+                )}
+              </ul>
+            )}
+          </div>
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
@@ -197,6 +262,9 @@ export const ImportPanel: React.FC<{ onMessage: (text: string) => void }> = ({ o
               className="min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
             >
               Save {selected.size} item{selected.size === 1 ? '' : 's'}
+              {previewPlan && previewPlan.additions.length > 0
+                ? ` and add ${previewPlan.additions.length} to my assignments`
+                : ''}
             </button>
             <button
               type="button"

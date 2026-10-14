@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+﻿import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // A pretend Gemini: returns whatever text the test sets, and records what it was asked.
 const fake = vi.hoisted(() => ({ text: '{}', calls: [] as { model: string; contents: unknown }[] }));
@@ -28,7 +28,7 @@ interface Reply {
 async function call(
   preset: string,
   body: unknown = {},
-  opts: { method?: string; code?: string | null } = {},
+  opts: { method?: string; code?: string | null; headers?: Record<string, string> } = {},
 ): Promise<Reply> {
   const reply: Reply = { status: 200, body: undefined };
   const res = {
@@ -46,7 +46,7 @@ async function call(
   const req = {
     method: opts.method ?? 'POST',
     query: { preset },
-    headers: code === null ? {} : { 'x-access-code': code },
+    headers: { ...(code === null ? {} : { 'x-access-code': code }), ...(opts.headers ?? {}) },
     body,
   };
   await handler(req as never, res as never);
@@ -148,10 +148,10 @@ describe('Gemini endpoint: who can call it (Technical Spec 3.2)', () => {
   });
 
   it('stops after 25 calls a minute for one access code', async () => {
-    process.env.ACCESS_CODE = 'limit-test-code';
+    process.env.ACCESS_CODE = 'limit-test-code-long-enough';
     fake.text = JSON.stringify(CASES.firstMove.reply);
     let last = 0;
-    for (let i = 0; i < 27; i++) last = (await call('firstMove', CASES.firstMove.body, { code: 'limit-test-code' })).status;
+    for (let i = 0; i < 27; i++) last = (await call('firstMove', CASES.firstMove.body, { code: 'limit-test-code-long-enough' })).status;
     expect(last).toBe(429);
     process.env.ACCESS_CODE = 'test-access-code';
   });
@@ -225,5 +225,71 @@ describe('What goes into a prompt (A36, prompt-injection)', () => {
   it('rejects an oversize or unsupported syllabus file', () => {
     expect(buildPromptSpec('syllabus', { fileBase64: 'A'.repeat(6 * 1024 * 1024), mimeType: 'application/pdf' })).toMatchObject({ ok: false, status: 413 });
     expect(buildPromptSpec('syllabus', { fileBase64: 'QQ==', mimeType: 'image/png' })).toMatchObject({ ok: false, status: 415 });
+  });
+});
+
+describe('Gemini endpoint: guarding the access code', () => {
+  it('treats a missing or too-short ACCESS_CODE as not set up, even when the guess matches', async () => {
+    fake.text = JSON.stringify(CASES.firstMove.reply);
+    for (const weak of ['', 'short', 'x'.repeat(15)]) {
+      process.env.ACCESS_CODE = weak;
+      expect((await call('firstMove', CASES.firstMove.body, { code: weak || 'anything' })).status).toBe(401);
+    }
+    process.env.ACCESS_CODE = 'x'.repeat(16);
+    expect((await call('firstMove', CASES.firstMove.body, { code: 'x'.repeat(16) })).status).toBe(200);
+    process.env.ACCESS_CODE = 'test-access-code';
+    expect(fake.calls).toHaveLength(1);
+  });
+
+  it('stops answering one address after 8 wrong codes, even for the right code, then recovers', async () => {
+    fake.text = JSON.stringify(CASES.firstMove.reply);
+    const here = { 'x-real-ip': '203.0.113.7' };
+    for (let i = 0; i < 8; i++) {
+      expect((await call('firstMove', {}, { code: `wrong-guess-${i}`, headers: here })).status).toBe(401);
+    }
+    const locked = await call('firstMove', CASES.firstMove.body, { code: 'test-access-code', headers: here });
+    expect(locked.status).toBe(429);
+    expect(locked.body).toEqual({ ok: false, reason: 'rate_limited' });
+    // Somebody else is not affected.
+    expect((await call('firstMove', CASES.firstMove.body, { headers: { 'x-real-ip': '203.0.113.99' } })).status).toBe(200);
+    // After the window the address works again.
+    clock += 16 * 60_000;
+    vi.setSystemTime(clock);
+    expect((await call('firstMove', CASES.firstMove.body, { headers: here })).status).toBe(200);
+  });
+
+  it('stops everyone after too many wrong codes overall, so many addresses cannot split up the guessing', async () => {
+    for (let ip = 1; ip <= 8; ip++) {
+      for (let i = 0; i < 8; i++) await call('firstMove', {}, { code: `guess-${ip}-${i}`, headers: { 'x-real-ip': `198.51.100.${ip}` } });
+    }
+    const fresh = await call('firstMove', CASES.firstMove.body, { headers: { 'x-real-ip': '198.51.100.200' } });
+    expect(fresh.status).toBe(429);
+    clock += 16 * 60_000;
+    vi.setSystemTime(clock);
+    expect((await call('firstMove', CASES.firstMove.body, { headers: { 'x-real-ip': '198.51.100.200' } })).status).toBe(200);
+  });
+
+  it('refuses an oversized code header and never repeats a guess back', async () => {
+    const huge = 'a'.repeat(5000);
+    const out = await call('firstMove', {}, { code: huge, headers: { 'x-real-ip': '192.0.2.5' } });
+    expect(out.status).toBe(401);
+    expect(JSON.stringify(out.body)).not.toContain('aaaa');
+  });
+
+  it('refuses requests that come from another website, and allows the site itself', async () => {
+    fake.text = JSON.stringify(CASES.firstMove.reply);
+    const other = await call('firstMove', CASES.firstMove.body, { headers: { origin: 'https://evil.example.com', host: 'adhd1x.example.com' } });
+    expect(other.status).toBe(403);
+    const junk = await call('firstMove', CASES.firstMove.body, { headers: { origin: 'not a url', host: 'adhd1x.example.com' } });
+    expect(junk.status).toBe(403);
+    const same = await call('firstMove', CASES.firstMove.body, { headers: { origin: 'https://adhd1x.example.com', host: 'adhd1x.example.com' } });
+    expect(same.status).toBe(200);
+  });
+
+  it('answers a body that is not valid JSON, or not an object, with a plain error and no model call', async () => {
+    const before = fake.calls.length;
+    expect((await call('firstMove', '{not json')).status).toBe(400);
+    expect((await call('firstMove', '[1,2,3]')).status).toBe(400);
+    expect(fake.calls).toHaveLength(before);
   });
 });

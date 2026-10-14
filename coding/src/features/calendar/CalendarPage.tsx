@@ -4,16 +4,26 @@ import { useApp } from '../../app/AppContext';
 import { useClock } from '../../shared/clock/ClockContext';
 import { CalendarItemRow } from './CalendarItemRow';
 import { ImportPanel } from './ImportPanel';
-import { formatDayHeading, getNewAssignments, getUpcomingByDay, UPCOMING_DAYS } from './calendarLogic';
+import { formatDayHeading, getNewAssignments, getUpcomingByDay, planCalendarAdd, UPCOMING_DAYS } from './calendarLogic';
+import { describeAdd, useCalendarAdd } from './useCalendarAdd';
 
 export const CalendarPage: React.FC = () => {
-  const { calendarItems, assignments, saveCalendarBatch, removeAllCalendarItems } = useApp();
+  const { calendarItems, assignments, courses, saveCalendarBatch, removeAllCalendarItems } = useApp();
+  const { commitAndSave } = useCalendarAdd();
   const [message, setMessage] = useState('');
   const [confirmRemove, setConfirmRemove] = useState(false);
   const { today } = useClock();
 
   const newItems = getNewAssignments(calendarItems, assignments, today);
   const upcoming = getUpcomingByDay(calendarItems, today);
+
+  // How many of the new assignments could be added in one tap (they must name a course).
+  const addable = planCalendarAdd(newItems, courses, assignments, () => 'x', 'x').additions.length;
+
+  const addAll = async () => {
+    const { plan } = await commitAndSave(newItems);
+    setMessage(describeAdd(plan));
+  };
 
   const markAllSeen = async () => {
     await saveCalendarBatch(newItems.map((i) => ({ ...i, isNew: false })));
@@ -39,6 +49,15 @@ export const CalendarPage: React.FC = () => {
             <h2 id="new-heading" className="text-xl font-bold">
               New assignments ({newItems.length})
             </h2>
+            {addable > 0 && (
+              <button
+                type="button"
+                onClick={() => void addAll()}
+                className="min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
+              >
+                Add all {addable} to my assignments
+              </button>
+            )}
             {newItems.length > 0 && (
               <button
                 type="button"

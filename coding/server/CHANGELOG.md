@@ -3,6 +3,12 @@
 Part of ADHD1X. Files: presets.ts, safety.ts
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-14 - Shared types and minimum code length
+- Made by: Claude
+- Changed: Added apiTypes.ts (the request and response shapes the endpoint uses) and MIN_ACCESS_CODE_LENGTH in safety.ts.
+- Why: Christian asked for security for his website. A review found no committed secrets and no dangerous code patterns; the gaps were guess limits on the access code, a few missing headers, and dependency warnings.
+- Notes: Removing @vercel/node (types only) dropped 11 dependency warnings.
+
 ## 2026-10-13 - 15 Gemini presets
 - Made by: Claude (from Gemini's files)
 - Changed: presets.ts now holds the output checks for all 15 presets and which model each uses (A111). New promptBuilders.ts builds each prompt, puts typed text in as quoted values, and keeps only named fields from task and course lists. New devApiPlugin.ts serves the endpoint during npm run dev, using the same handler Vercel runs, with keys read only on the server.

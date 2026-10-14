@@ -6,3 +6,10 @@ dist/
 .vercel/
 playwright-report/
 test-results/
+
+# Real personal data and Python caches. Never commit these.
+canvas-grades*.json
+adhd1x-export-*.json
+*.ics
+__pycache__/
+*.pyc

@@ -16,6 +16,8 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | Planning helpers (energy, long days, recovery, reading) | [src/features/planning/](src/features/planning/CHANGELOG.md) |
 | Tips and syllabus phrases | [src/features/tips/](src/features/tips/CHANGELOG.md) |
 | Saved routines | [src/features/routines/](src/features/routines/CHANGELOG.md) |
+| Grades import | [src/features/grades/](src/features/grades/CHANGELOG.md) |
+| Canvas grades tool (Python) | [tools/canvas_grades/](tools/canvas_grades/CHANGELOG.md) |
 | UI (Cosmos view) | [src/features/ui/](src/features/ui/CHANGELOG.md) |
 | Course and syllabus setup | [src/features/courses/](src/features/courses/CHANGELOG.md) |
 | Assignments list | [src/features/assignments/](src/features/assignments/CHANGELOG.md) |
@@ -32,6 +34,30 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | Gemini features (AI Mode, assignment tools, planning helpers, personalizer) | [src/features/gemini/](src/features/gemini/CHANGELOG.md) |
 | Gemini rules and safety (server) | [server/](server/CHANGELOG.md) |
 | Gemini endpoint (API) | [api/](api/CHANGELOG.md) |
+
+## 2026-10-14 - Security hardening
+- Made by: Claude
+- Changed: Access-code guess limits and checks on the Gemini endpoint; stronger headers in vercel.json (HSTS, no framing, same-origin policies, form-action); vite preview serves the same headers and the dev server is explicitly localhost-only; removed @vercel/node (types only) and upgraded react-router-dom to 7 (production dependencies now audit at 0 issues, all dependencies 26 down to 15); added SECURITY.md, security tests and npm run check:audit. Touched: api, server, shared, tests, config.
+- Why: Christian asked for security for his website. A review found no committed secrets and no dangerous code patterns; the gaps were guess limits on the access code, a few missing headers, and dependency warnings.
+- Notes: 176 unit, 11 browser and 34 Python tests pass; the built site shows zero CSP violations in a real browser. Nothing was committed or pushed.
+
+## 2026-10-14 - Grades import: choose courses
+- Made by: Claude
+- Changed: The grades preview now lets you tick which courses to bring in. Touched: grades, tests.
+- Why: Christian's first real Canvas file had 11 courses (604 assignments, 106 graded). Importing all of them at once would clutter the app, and there is no delete button yet.
+- Notes: 155 unit, 11 browser and 34 Python tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Import grades from Canvas (Python tool + file import)
+- Made by: Claude
+- Changed: New Python tool (tools/canvas_grades) that reads your own grades from Canvas with a token typed at a hidden prompt, and a Catch Up panel that imports the file it writes. package.json: added test:python and put it in npm run check. .gitignore: blocks canvas-grades*.json, adhd1x-export-*.json, *.ics and Python caches. Touched: tools, grades, catchUp, shared, tests.
+- Why: Christian asked to import his grades from Canvas with a secure pathway, preferably in Python. Decision F3 (Canvas API) was deferred, so this was built as a separate local tool plus a file import, not a website feature that talks to Canvas.
+- Notes: 154 unit, 11 browser and 34 Python tests pass. Not tested against the real Canvas. Nothing was committed or pushed.
+
+## 2026-10-14 - Calendar adds courses and assignments for you
+- Made by: Claude
+- Changed: Importing a calendar can now create the courses it names and add the ticked assignments, after a preview and a tap. Long calendar titles are cut to fit. Touched: calendar, tests.
+- Why: Christian's calendar names the course, but the page said 'Add a course first'. He asked for the app to add the course and the assignments itself when it can read them. The long-title bug from the audit is fixed in the same change.
+- Notes: 137 unit tests and 10 browser tests pass. Nothing was committed or pushed.
 
 ## 2026-10-13 - Whole site in the Cosmos form
 - Made by: Claude

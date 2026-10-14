@@ -3,6 +3,30 @@
 Part of ADHD1X. Folders: unit/, fixtures/, e2e/ (plus ../playwright.config.ts and ../MANUAL_CHECKLIST.md)
 Every change to the tests gets an entry here, and one line in the main [coding/CHANGELOG.md](../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-14 - Security tests
+- Made by: Claude
+- Changed: 6 more endpoint tests (weak code, one-address lockout and recovery, overall lockout, oversized header, cross-site requests, bad JSON) and security.test.ts (15 tests): headers in vercel.json, git-ignored secrets and data files, no secrets in browser code, no dangerous code patterns, no outside requests, and the Python tool keeps its rules.
+- Why: Christian asked for security for his website. A review found no committed secrets and no dangerous code patterns; the gaps were guess limits on the access code, a few missing headers, and dependency warnings.
+- Notes: Total now 176 unit tests, 11 browser tests and 34 Python tests. The production build was also walked in a real browser with the real headers: zero Content Security Policy violations.
+
+## 2026-10-14 - Course choice tests
+- Made by: Claude
+- Changed: One unit test for picking courses and a browser check that the tick box controls Save.
+- Why: Christian's first real Canvas file had 11 courses (604 assignments, 106 graded). Importing all of them at once would clutter the app, and there is no delete button yet.
+- Notes: Total now 155 unit tests, 11 browser tests and 34 Python tests.
+
+## 2026-10-14 - Grades import tests
+- Made by: Claude
+- Changed: 17 unit tests (gradesImport.test.ts) including a check through the real Catch Up math, run in four time zones, and one browser test with an accessibility scan. The Python tool has 34 tests of its own.
+- Why: Christian asked to import his grades from Canvas with a secure pathway, preferably in Python. Decision F3 (Canvas API) was deferred, so this was built as a separate local tool plus a file import, not a website feature that talks to Canvas.
+- Notes: Total now 154 unit tests, 11 browser tests and 34 Python tests.
+
+## 2026-10-14 - Calendar auto-add tests
+- Made by: Claude
+- Changed: 7 new unit tests (calendarAdd.test.ts) and one browser test: import with no courses, check the preview, save, check the courses and assignments, and re-import a backup of them.
+- Why: Christian's calendar names the course, but the page said 'Add a course first'. He asked for the app to add the course and the assignments itself when it can read them. The long-title bug from the audit is fixed in the same change.
+- Notes: Total now 137 unit tests and 10 browser tests.
+
 ## 2026-10-13 - Cosmos frame check
 - Made by: Claude
 - Changed: The Cosmos look test also checks each page has the page header band and the footer.

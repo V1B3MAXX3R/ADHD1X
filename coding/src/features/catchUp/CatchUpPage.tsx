@@ -8,6 +8,7 @@ import { ModeSwitch } from './components/ModeSwitch';
 import { GradeCalculator } from './components/GradeCalculator';
 import { PacePicker } from './components/PacePicker';
 import { DueSoonestQueue } from './components/DueSoonestQueue';
+import { GradesImportPanel } from '../grades/GradesImportPanel';
 
 export const CatchUpPage: React.FC = () => {
   const { assignments } = useApp();
@@ -21,6 +22,7 @@ export const CatchUpPage: React.FC = () => {
     <AppShell title={isSpace ? 'Hyperdrive (Catch Up)' : modeName}>
       <div className="space-y-6">
         <ModeSwitch />
+        <GradesImportPanel />
         <GradeCalculator assignments={inView} />
         <PacePicker stats={stats} />
         <DueSoonestQueue tasks={stats.dueSoonestTasks} />

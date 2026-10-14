@@ -3,6 +3,18 @@
 Part of ADHD1X. Files: components/AppShell.tsx, data/database.ts, data/schemas.ts, ai/client.ts, logic/estimates.ts, styles/tokens.css
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-14 - react-router-dom 7
+- Made by: Claude
+- Changed: Upgraded react-router-dom from 6 to 7.18, which clears the two audit warnings in the code that ships to the browser. No app code changed.
+- Why: Christian asked for security for his website. A review found no committed secrets and no dangerous code patterns; the gaps were guess limits on the access code, a few missing headers, and dependency warnings.
+- Notes: All unit, Python and browser tests pass. The two React Router future-flag console warnings are gone.
+
+## 2026-10-14 - Assignment source canvas
+- Made by: Claude
+- Changed: The assignment source can now be canvas (alongside syllabus, manual and calendar).
+- Why: Christian asked to import his grades from Canvas with a secure pathway, preferably in Python. Decision F3 (Canvas API) was deferred, so this was built as a separate local tool plus a file import, not a website feature that talks to Canvas.
+- Notes: Older data loads unchanged.
+
 ## 2026-10-13 - AppShell has a Cosmos frame
 - Made by: Claude
 - Changed: AppShell now draws a different frame (top masthead, page header band, footer) when the Cosmos look is on, and takes a noHero option.
