@@ -17,17 +17,21 @@ import {
   getFirstMoves,
   getQuizAnswers,
   getSettings,
+  getSession,
   getStudyDay,
   saveAssignment,
   saveCalendarItems,
   saveCourse,
   saveFirstMove,
   saveQuizAnswer,
+  saveSession,
   saveSettings,
   saveStudyDay,
 } from '../shared/data/database';
+import { cleanLine, MAX_GOAL_LENGTH, minutesWorked, SessionOutcome } from '../features/memory/sessionMemory';
 import { applyQuizAnswersToSettings } from '../features/quiz/quizRules';
 import { blockAt, formatLocalDate, minutesOfDay } from '../shared/clock/clockLogic';
+import { applyCustomPalette } from '../features/gemini/palette';
 import { pickRandomFunFact } from '../features/voyage/funFacts';
 import { buildCompletionReward, CompletionReward } from '../features/voyage/rewards';
 
@@ -38,6 +42,9 @@ interface TimerState {
   secondsRemaining: number;
   totalSeconds: number;
   startedInBlock: string | null;
+  sessionId: string | null; // the saved session this timer belongs to (A91)
+  goalText: string | null; // the optional one-line goal for this session
+  workedSeconds: number; // time from earlier "Keep going" rounds in the same session
 }
 
 interface AppContextValue {
@@ -66,9 +73,13 @@ interface AppContextValue {
   removeAllCalendarItems: () => Promise<void>;
   saveTodayPlanState: (day: StudyDay) => Promise<void>;
   cacheFirstMove: (fm: FirstMoveRecord) => Promise<void>;
-  startTimer: (assignmentId: string, minutes: number, currentBlock: string | null) => void;
+  startTimer: (assignmentId: string, minutes: number, currentBlock: string | null, goalText?: string) => void;
+  extendTimer: (minutes: number) => void;
   pauseResumeTimer: () => void;
   stopTimer: () => void;
+  // Ends the session. `outcome` answers "done, partly, or not yet?" (A91). `note` is the "Where was I?"
+  // line (A62): a string saves it, null clears it, leaving it out keeps what was there.
+  finishSession: (result: { outcome?: SessionOutcome; note?: string | null; minutes?: number }) => Promise<void>;
   reloadAll: () => Promise<void>;
   requestGeminiWithNotice: (action: () => void) => void;
 }
@@ -115,6 +126,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       secondsRemaining: 120,
       totalSeconds: 120,
       startedInBlock: null,
+      sessionId: null,
+      goalText: null,
+      workedSeconds: 0,
     };
   });
 
@@ -155,6 +169,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     root.setAttribute('data-motion', settings.motion ? 'on' : 'off');
     root.setAttribute('data-spacing', settings.spacing);
     root.style.fontSize = `${settings.textScale}%`;
+    applyCustomPalette(settings.customPalette);
   }, [settings]);
 
   useEffect(() => {
@@ -257,7 +272,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!storageBlocked) await saveFirstMove(fm);
   };
 
-  const startTimer = (assignmentId: string, minutes: number, currentBlock: string | null) => {
+  const startTimer = (
+    assignmentId: string,
+    minutes: number,
+    currentBlock: string | null,
+    goalText?: string,
+  ) => {
+    const goal = goalText ? cleanLine(goalText, MAX_GOAL_LENGTH) : undefined;
+    const sessionId = crypto.randomUUID();
     setTimer({
       running: true,
       paused: false,
@@ -265,7 +287,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       secondsRemaining: minutes * 60,
       totalSeconds: minutes * 60,
       startedInBlock: currentBlock,
+      sessionId,
+      goalText: goal ?? null,
+      workedSeconds: 0,
     });
+    if (!storageBlocked) {
+      void saveSession({
+        id: sessionId,
+        assignmentId,
+        startedAt: new Date().toISOString(),
+        plannedMinutes: Math.max(1, Math.round(minutes)),
+        goalText: goal,
+      });
+    }
+  };
+
+  // "Keep going": another round in the same session, so the goal and the time worked carry over.
+  const extendTimer = (minutes: number) => {
+    setTimer((prev) =>
+      prev.assignmentId
+        ? {
+            ...prev,
+            running: true,
+            paused: false,
+            workedSeconds: (prev.workedSeconds ?? 0) + Math.max(0, prev.totalSeconds - prev.secondsRemaining),
+            secondsRemaining: minutes * 60,
+            totalSeconds: minutes * 60,
+          }
+        : prev,
+    );
   };
 
   const pauseResumeTimer = () => {
@@ -273,12 +323,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const stopTimer = () => {
-    setTimer((prev) => ({ ...prev, running: false, paused: false }));
+    setTimer((prev) => ({
+      ...prev,
+      running: false,
+      paused: false,
+      assignmentId: null, // also hides the timer bar after it has run out
+      sessionId: null,
+      goalText: null,
+      workedSeconds: 0,
+    }));
     setBlockChangePromptOpen(false);
   };
 
+  const finishSession = async (result: { outcome?: SessionOutcome; note?: string | null; minutes?: number }) => {
+    const t = timer;
+    // The person can correct the time. It is only used to improve future estimates, never shown as a score (A90).
+    const minutes = Math.max(
+      0,
+      result.minutes ?? minutesWorked(t.workedSeconds ?? 0, t.totalSeconds, t.secondsRemaining),
+    );
+    if (t.sessionId && !storageBlocked) {
+      const record = await getSession(t.sessionId);
+      if (record) {
+        await saveSession({
+          ...record,
+          actualMinutes: minutes,
+          outcome: result.outcome ?? record.outcome,
+        });
+      }
+    }
+    const task = t.assignmentId ? assignments.find((x) => x.id === t.assignmentId) : undefined;
+    if (task && (result.note !== undefined || (result.minutes !== undefined && minutes > 0))) {
+      await upsertAssignment({
+        ...task,
+        note: result.note !== undefined ? (result.note ?? undefined) : task.note,
+        minutesLogged: result.minutes !== undefined ? (task.minutesLogged ?? 0) + minutes : task.minutesLogged,
+      });
+    }
+    stopTimer();
+  };
+
   const requestGeminiWithNotice = (action: () => void) => {
-    if (settings.geminiNoticeAcknowledged) {
+    // With AI Mode off nothing is sent, so there is nothing to give notice about.
+    if (settings.geminiNoticeAcknowledged || !settings.aiModeEnabled) {
       action();
     } else {
       setPendingGeminiAction(() => action);
@@ -317,8 +404,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         saveTodayPlanState,
         cacheFirstMove,
         startTimer,
+        extendTimer,
         pauseResumeTimer,
         stopTimer,
+        finishSession,
         reloadAll,
         requestGeminiWithNotice,
       }}

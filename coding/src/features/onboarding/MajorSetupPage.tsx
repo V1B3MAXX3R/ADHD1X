@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
+import { MajorPersonalizer } from '../gemini/MajorPersonalizer';
 
 export const MajorSetupPage: React.FC = () => {
   const { settings, updateSettings } = useApp();
@@ -49,6 +50,9 @@ export const MajorSetupPage: React.FC = () => {
           </button>
         </div>
       </form>
+      <div className="mt-6">
+        <MajorPersonalizer major={major} onApplied={() => navigate('/setup/courses')} />
+      </div>
     </AppShell>
   );
 };

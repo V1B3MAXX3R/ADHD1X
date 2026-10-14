@@ -3,6 +3,18 @@
 Part of ADHD1X. Files: SettingsPage.tsx
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - Calm mode, recovery gaps, routines and all quiz questions
+- Made by: Claude
+- Changed: Display: calm mode switch. Planning: recovery gaps. Help and tone: saved routines. My answers: all quiz questions in four groups.
+- Why: Christian pasted 20 original feature files (11 to 30) and asked for them to be added.
+- Notes: Answers use the existing quiz rules, so a Yes or No still updates the matching setting unless you changed that setting yourself.
+
+## 2026-10-13 - AI Mode and personalizer
+- Made by: Claude
+- Changed: Privacy has the AI Mode switch and the AI rules. Display has Describe how you work and the custom palette.
+- Why: Gemini features request.
+- Notes: None.
+
 ## 2026-10-13 - Catch Up section
 - Made by: Claude
 - Changed: New Catch Up section (between My answers and Privacy) with the current state and a link to the calculator and switch.
@@ -32,6 +44,7 @@ Every change to this part gets an entry here, and one line in the main [coding/C
 - Changed: Moved into this folder as part of the project cleanup. Import paths updated. No behavior changes.
 - Why: One folder per part of the website so each part can be viewed and updated on its own.
 - Notes: Typecheck passes. Unit tests unchanged (10 of 11 pass; Case 3 in the day-plan tests is a known open item).
+
 
 
 

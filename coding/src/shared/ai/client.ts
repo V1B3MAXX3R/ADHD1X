@@ -1,7 +1,9 @@
-import { getAccessCode } from '../data/database';
+import { getAccessCode, getSettings } from '../data/database';
 import { AssignmentType } from '../data/schemas';
+import type { PresetName } from '../../../server/presets';
 
 export type AiFailureReason =
+  | 'ai_disabled'
   | 'unauthorized'
   | 'too_large'
   | 'unsupported_file'
@@ -11,20 +13,54 @@ export type AiFailureReason =
   | 'unsafe_output'
   | 'unavailable';
 
+export type AiResult<T> = { ok: true; data: T } | { ok: false; reason: AiFailureReason };
+
 export function getCalmErrorMessage(reason: AiFailureReason): string {
   switch (reason) {
+    case 'ai_disabled':
+      return 'AI Mode is turned off, so the built-in tools are being used. You can turn it on in Settings, Privacy.';
     case 'unauthorized':
-      return 'Your personal access code is missing or did not match. You can set it in Settings > Privacy, or continue by hand.';
+      return 'Your personal access code is missing or did not match. You can set it in Settings > Privacy, or continue with the built-in tools.';
     case 'too_large':
-      return 'That file is over the 4 MB limit. You can paste the syllabus text below or add assignments by hand.';
+      return 'That is over the size limit. You can paste the text below or add things by hand.';
     case 'unsupported_file':
-      return 'Only PDF or plain text files are supported. You can paste the text or add assignments by hand.';
+      return 'Only PDF or plain text files are supported. You can paste the text or add things by hand.';
     case 'rate_limited':
-      return 'Gemini is taking a breather right now. We switched to a built-in starter so you can keep going.';
+      return 'Gemini is taking a breather right now. We switched to the built-in option so you can keep going.';
     case 'timeout':
       return 'Gemini took longer than 20 seconds, so we switched to the built-in option.';
     default:
       return "We couldn't reach Gemini right now. You can use the built-in option or enter details by hand.";
+  }
+}
+
+// The one way the browser talks to Gemini. It always goes through our server, never straight to Google,
+// and does nothing at all when AI Mode is off. Callers decide exactly which fields to send: never grades,
+// scores or personal notes (A36).
+export async function callAiPreset<T = unknown>(
+  preset: PresetName,
+  payload: Record<string, unknown>,
+): Promise<AiResult<T>> {
+  try {
+    const settings = await getSettings();
+    if (!settings.aiModeEnabled) return { ok: false, reason: 'ai_disabled' };
+  } catch {
+    // If saved settings cannot be read, carry on: the server still checks the access code.
+  }
+
+  const accessCode = await getAccessCode();
+  try {
+    const res = await fetch(`/api/ai/${preset}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-access-code': accessCode,
+      },
+      body: JSON.stringify(payload),
+    });
+    return (await res.json()) as AiResult<T>;
+  } catch {
+    return { ok: false, reason: 'unavailable' };
   }
 }
 
@@ -35,20 +71,7 @@ export async function callSyllabusPreset(payload: {
   fileBase64?: string;
   mimeType?: string;
 }) {
-  const accessCode = await getAccessCode();
-  try {
-    const res = await fetch('/api/ai/syllabus', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-access-code': accessCode,
-      },
-      body: JSON.stringify(payload),
-    });
-    return await res.json();
-  } catch {
-    return { ok: false, reason: 'unavailable' as AiFailureReason };
-  }
+  return callAiPreset<any>('syllabus', payload);
 }
 
 export async function callFirstMovePreset(payload: {
@@ -59,18 +82,5 @@ export async function callFirstMovePreset(payload: {
   sizeChoice: 'bite' | 'half' | 'full';
   detailsText?: string;
 }) {
-  const accessCode = await getAccessCode();
-  try {
-    const res = await fetch('/api/ai/firstMove', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-access-code': accessCode,
-      },
-      body: JSON.stringify(payload),
-    });
-    return await res.json();
-  } catch {
-    return { ok: false, reason: 'unavailable' as AiFailureReason };
-  }
+  return callAiPreset<any>('firstMove', payload);
 }

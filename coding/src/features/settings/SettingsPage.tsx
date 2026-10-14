@@ -12,6 +12,12 @@ import {
 } from '../../shared/data/database';
 import { ExportFile } from '../../shared/data/schemas';
 import { DISCLAIMER_TEXT_A21 } from '../onboarding/WelcomePage';
+import { AiModeBanner } from '../gemini/AiModeBanner';
+import { WebsitePersonalizerPanel } from '../gemini/WebsitePersonalizerPanel';
+import { SensoryQuickSwitch } from '../focus/SensoryQuickSwitch';
+import { RecoveryGapsManager } from '../planning/RecoveryGapsManager';
+import { SavedRoutinesManager } from '../routines/SavedRoutinesManager';
+import { FullQuizPanel } from '../quiz/FullQuizPanel';
 
 const SECTIONS = [
   ['display', 'Display'],
@@ -249,6 +255,10 @@ export const SettingsPage: React.FC = () => {
                 </select>
                 <WhyOnNote settingKey="timerDisplay" defaultValue="bar" />
               </div>
+
+              <SensoryQuickSwitch />
+
+              <WebsitePersonalizerPanel />
             </>
           )}
 
@@ -352,6 +362,8 @@ export const SettingsPage: React.FC = () => {
                 />
                 <span>Weight major courses higher when deadlines are close</span>
               </label>
+
+              <RecoveryGapsManager />
             </>
           )}
 
@@ -396,6 +408,8 @@ export const SettingsPage: React.FC = () => {
                   <option value="short">Short and direct</option>
                 </select>
               </div>
+
+              <SavedRoutinesManager />
             </>
           )}
 
@@ -403,7 +417,7 @@ export const SettingsPage: React.FC = () => {
             <>
               <h2 className="text-lg font-bold">My quiz answers</h2>
               <p className="text-sm text-muted">
-                Retake the 5 basic questions or reset your personalization settings.
+                Retake the 5 basic questions, or answer any of the other questions below.
               </p>
               <Link
                 to="/welcome"
@@ -411,6 +425,8 @@ export const SettingsPage: React.FC = () => {
               >
                 Review quiz questions
               </Link>
+
+              <FullQuizPanel />
             </>
           )}
 
@@ -439,6 +455,7 @@ export const SettingsPage: React.FC = () => {
           {section === 'privacy' && (
             <>
               <h2 className="text-lg font-bold">Privacy &amp; Data Tools</h2>
+              <AiModeBanner />
               <p className="text-sm">
                 Your courses, assignments, grades, and notes live on this device. Only syllabus text/files and assignment details you tap to send go to Gemini. On the free tier, Google may use prompts to improve its products and human reviewers may read them.
               </p>

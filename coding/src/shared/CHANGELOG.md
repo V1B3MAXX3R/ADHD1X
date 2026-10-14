@@ -3,6 +3,24 @@
 Part of ADHD1X. Files: components/AppShell.tsx, data/database.ts, data/schemas.ts, ai/client.ts, logic/estimates.ts, styles/tokens.css
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - Two new settings and a logbook save function
+- Made by: Claude
+- Changed: Settings: recoveryGaps and readingMinutesPerPage (with defaults, so old saved data still loads). Database: saveLogbookEntry.
+- Why: Christian pasted 20 original feature files (11 to 30) and asked for them to be added.
+- Notes: Saved-data version stays 2; only fields with defaults were added.
+
+## 2026-10-13 - Gemini client and custom palette
+- Made by: Claude
+- Changed: ai/client.ts has one callAiPreset for all presets and does nothing at all when AI Mode is off. New saved fields: aiModeEnabled, customPalette, savedRoutines, and a checklist on assignments (older saved data still loads).
+- Why: Gemini features request.
+- Notes: Saved-data version unchanged. A saved palette that fails the contrast checks is never applied.
+
+## 2026-10-13 - Session wrap-up in the timer bar
+- Made by: Claude
+- Changed: Done for now opens the wrap-up dialog; Keep going extends the same session. Note max 280 and goal max 200 characters in the saved-data rules; added getSession.
+- Why: A62, A91.
+- Notes: Saved-data version unchanged.
+
 ## 2026-10-13 - Hyperdrive streaks and earned points
 - Made by: Claude
 - Changed: Space background shows still gold warp streaks when Catch Up is on (space/HyperdriveStreaks.tsx). New saved fields: catchUp settings and an optional earnedPoints on assignments (older saved data still loads).
@@ -38,6 +56,8 @@ Every change to this part gets an entry here, and one line in the main [coding/C
 - Changed: Moved into this folder as part of the project cleanup. Import paths updated. No behavior changes.
 - Why: One folder per part of the website so each part can be viewed and updated on its own.
 - Notes: Typecheck passes. Unit tests unchanged (10 of 11 pass; Case 3 in the day-plan tests is a known open item).
+
+
 
 
 

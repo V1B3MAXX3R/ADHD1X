@@ -125,6 +125,11 @@ export async function getSessions(): Promise<SessionRecord[]> {
   return db.getAll('sessions');
 }
 
+export async function getSession(id: string): Promise<SessionRecord | undefined> {
+  const db = await getDB();
+  return db.get('sessions', id);
+}
+
 export async function saveSession(record: SessionRecord): Promise<void> {
   const db = await getDB();
   await db.put('sessions', record);
@@ -143,6 +148,11 @@ export async function saveVoyage(record: VoyageRecord): Promise<void> {
 export async function getLogbook(): Promise<LogbookRecord[]> {
   const db = await getDB();
   return db.getAll('logbook');
+}
+
+export async function saveLogbookEntry(record: LogbookRecord): Promise<void> {
+  const db = await getDB();
+  await db.put('logbook', record);
 }
 
 export async function getCalendarItems(): Promise<CalendarItem[]> {

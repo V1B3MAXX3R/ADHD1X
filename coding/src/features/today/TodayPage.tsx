@@ -6,7 +6,13 @@ import { useClock } from '../../shared/clock/ClockContext';
 import { blockAt, describeNow, format12h, formatDueIn, minutesOfDay, toLocalIso, formatLocalTime } from '../../shared/clock/clockLogic';
 import { buildDayPlan, PlannedSessionItem } from './planEngine';
 import { CatchUpBar } from './CatchUpBar';
+import { LeftOffList } from '../memory/LeftOffList';
+import { StudyArchitectPanel } from '../gemini/StudyArchitectPanel';
 import { BlockName } from '../../shared/data/schemas';
+import { EnergyCheck } from '../planning/EnergyCheck';
+import { BurnoutShield } from '../planning/BurnoutShield';
+import { activeRecoveryGap, formatMinutesAsHHMM } from '../planning/planningLogic';
+import { ZeroDecisionStart } from '../focus/ZeroDecisionStart';
 
 export const TodayPage: React.FC = () => {
   const {
@@ -17,6 +23,7 @@ export const TodayPage: React.FC = () => {
     saveTodayPlanState,
     upsertAssignment,
     completeAssignmentWithReward,
+    updateSettings,
     timer,
   } = useApp();
   const navigate = useNavigate();
@@ -66,6 +73,7 @@ export const TodayPage: React.FC = () => {
   );
 
   const rightNow = describeNow(settings.blockWindows, selectedBlocks, clock.minutes);
+  const recovery = activeRecoveryGap(settings.recoveryGaps, clock.now);
 
   const toggleBlock = async (b: BlockName) => {
     const nextBlocks = selectedBlocks.includes(b)
@@ -102,6 +110,7 @@ export const TodayPage: React.FC = () => {
       <AppShell title={`Today, ${todayStr}`}>
         <div className="space-y-4">
           <CatchUpBar />
+          <LeftOffList />
           <div className="flex flex-wrap items-center justify-between gap-2 bg-surface p-4 rounded border border-border">
             <p className="text-sm">Showing your upcoming assignments by due date.</p>
             <button
@@ -164,9 +173,16 @@ export const TodayPage: React.FC = () => {
     <AppShell title={`Today, ${todayStr}`}>
       <div className="space-y-6">
         <CatchUpBar />
+        <LeftOffList />
         <section aria-label="Right now" className="p-4 rounded border border-border bg-surface space-y-2">
           <p className="font-medium">{rightNow.headline}</p>
           <p className="text-sm text-muted">{rightNow.detail}</p>
+          {recovery && (
+            <p role="status" className="text-sm">
+              Quiet time after {recovery.title} until {format12h(formatMinutesAsHHMM(recovery.untilMinutes))}. There is no
+              rush to start.
+            </p>
+          )}
           {planIsStale && (
             <div
               role="status"
@@ -185,6 +201,25 @@ export const TodayPage: React.FC = () => {
             </div>
           )}
         </section>
+
+        <StudyArchitectPanel />
+
+        <EnergyCheck
+          currentBlocks={selectedBlocks}
+          usualBlocks={settings.usualBlocks}
+          onUse={(blocks, starterMinutes) => {
+            void saveTodayPlanState({ date: todayStr, blocks, accepted: false, manualMoves });
+            void updateSettings({ starterMinutes }, true);
+          }}
+        />
+
+        <BurnoutShield
+          today={todayStr}
+          todayBlocks={selectedBlocks}
+          onSwitchToOneBlock={(block) =>
+            void saveTodayPlanState({ date: todayStr, blocks: [block], accepted: false, manualMoves })
+          }
+        />
 
         <section
           aria-label="Study blocks"
@@ -438,7 +473,7 @@ export const TodayPage: React.FC = () => {
         )}
 
         {plan.items.length > 0 && (
-          <div>
+          <div className="space-y-3">
             <button
               type="button"
               onClick={() => navigate(`/start/${plan.items[0].assignment.id}`)}
@@ -446,6 +481,7 @@ export const TodayPage: React.FC = () => {
             >
               Help me start top task
             </button>
+            <ZeroDecisionStart topTask={plan.items[0].assignment} />
           </div>
         )}
       </div>

@@ -5,6 +5,8 @@ import { getWhyOnNote } from '../../features/quiz/quizRules';
 import { Settings } from '../data/schemas';
 import { SpaceBackground } from '../space/SpaceBackground';
 import { RewardDialog } from '../../features/voyage/RewardDialog';
+import { SessionWrapUp } from '../../features/memory/SessionWrapUp';
+import { ParkingLot } from '../../features/focus/ParkingLot';
 import { ClockDisplay } from '../clock/ClockDisplay';
 import { ClockNotices } from '../clock/ClockNotices';
 import { ExportReminder } from '../../features/settings/ExportReminder';
@@ -34,8 +36,9 @@ export const AppShell: React.FC<{
   title: string;
   children: React.ReactNode;
 }> = ({ title, children }) => {
-  const { settings, updateSettings, storageBlocked, timer, pauseResumeTimer, stopTimer, startTimer, assignments, blockChangePromptOpen, dismissBlockChangePrompt } = useApp();
+  const { settings, updateSettings, storageBlocked, timer, pauseResumeTimer, stopTimer, extendTimer, assignments, blockChangePromptOpen, dismissBlockChangePrompt } = useApp();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [wrapUpOpen, setWrapUpOpen] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
@@ -263,11 +266,10 @@ export const AppShell: React.FC<{
                 {timer.paused ? 'Resume' : 'Pause'}
               </button>
             )}
+            <ParkingLot />
             <button
               type="button"
-              onClick={() =>
-                startTimer(timer.assignmentId!, settings.starterMinutes, timer.startedInBlock)
-              }
+              onClick={() => extendTimer(settings.starterMinutes)}
               className="min-h-[44px] px-3 py-1 rounded bg-accent text-on-accent font-medium"
             >
               Keep going
@@ -281,7 +283,7 @@ export const AppShell: React.FC<{
             </button>
             <button
               type="button"
-              onClick={stopTimer}
+              onClick={() => setWrapUpOpen(true)}
               className="min-h-[44px] px-3 py-1 rounded border border-border bg-bg text-text"
             >
               Done for now
@@ -291,6 +293,7 @@ export const AppShell: React.FC<{
       )}
 
       <RewardDialog />
+      {wrapUpOpen && timer.assignmentId && <SessionWrapUp onClose={() => setWrapUpOpen(false)} />}
 
       {helpOpen && (
         <div

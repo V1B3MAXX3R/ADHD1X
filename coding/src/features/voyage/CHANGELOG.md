@@ -3,6 +3,12 @@
 Part of ADHD1X. Files: VoyagePage.tsx, voyage.ts
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - Logbook and nine extra study facts
+- Made by: Claude
+- Changed: (1) A logbook of past voyages (A54): save a snapshot any time; it never resets progress. In regular style it is called Past semesters. (2) Nine extra fun facts about how studying works (FF21 to FF29), kept in their own file.
+- Why: Christian pasted 20 original feature files (11 to 30) and asked for them to be added.
+- Notes: The 20 approved facts (A34, A77) are unchanged. The nine new ones are NOT on the approved list; their sources need checking. A tenth pasted fact (FF30, about checklists and double-empathy research) was left out because the source does not support the claim, and others were reworded to match what their sources show. The pasted logbook compared dates in UTC; this one uses the device's local date.
+
 ## 2026-10-13 - Space UI overhaul: solar system map, planet badges, rewards, fun facts
 - Made by: Claude (from Christian's Space UI script)
 - Changed: Rebuilt the Voyage page from small parts: `components/SolarSystemMap.tsx` (Earth to Neptune route with a spacecraft), `components/MissionLog.tsx` (stop list with planet badges, finished-assignment log), `components/FunFactCard.tsx`. Added `funFacts.ts` (the 20 approved facts FF1 to FF20), `planets.ts` (colors and badge text per stop), `rewards.ts` (works out points and newly reached stop), and `RewardDialog.tsx` (the finish pop-up). Regular style keeps the plain finished list.

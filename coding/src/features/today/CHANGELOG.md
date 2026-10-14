@@ -3,6 +3,24 @@
 Part of ADHD1X. Files: TodayPage.tsx, planEngine.ts
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - Energy check, long-day question, quiet time, one-tap start
+- Made by: Claude
+- Changed: Added the optional energy check, the two-long-days question, the quiet-time note after a recovery gap, and the zero-decision start button. See the planning and focus changelogs.
+- Why: Christian pasted 20 original feature files (11 to 30) and asked for them to be added.
+- Notes: Nothing on Today changes by itself; each helper acts only when tapped.
+
+## 2026-10-13 - Planning helpers
+- Made by: Claude
+- Changed: A closed Planning helpers section (Uses Gemini) above the study blocks.
+- Why: Gemini features request.
+- Notes: Hidden while AI Mode is off.
+
+## 2026-10-13 - Where you left off
+- Made by: Claude
+- Changed: Added the Where you left off card (up to 3 tasks with notes, each with Pick it back up and Clear note).
+- Why: A62.
+- Notes: The card disappears when there are no notes.
+
 ## 2026-10-13 - Catch Up bar and earlier work
 - Made by: Claude
 - Changed: Added CatchUpBar.tsx (shown only when Catch Up is on). When Catch Up is on, unfinished work from earlier dates is added to the plan.
@@ -32,6 +50,8 @@ Every change to this part gets an entry here, and one line in the main [coding/C
 - Changed: Moved into this folder as part of the project cleanup. Import paths updated. No behavior changes.
 - Why: One folder per part of the website so each part can be viewed and updated on its own.
 - Notes: Typecheck passes. Unit tests unchanged (10 of 11 pass; Case 3 in the day-plan tests is a known open item).
+
+
 
 
 

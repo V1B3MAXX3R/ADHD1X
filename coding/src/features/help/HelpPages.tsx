@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { AppShell } from '../../shared/components/AppShell';
-import { BUILT_IN_TIPS } from '../helpMeStart/templates';
+import { EvidenceTipsLibrary } from '../tips/EvidenceTipsLibrary';
+import { DecodeAcademicRules } from '../tips/DecodeAcademicRules';
 
 export const HelpOverviewPage: React.FC = () => (
   <AppShell title="How ADHD1X works & Tips">
@@ -13,17 +14,9 @@ export const HelpOverviewPage: React.FC = () => (
         </p>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-bold">Practical study tips</h2>
-        <ul className="space-y-2 text-sm">
-          {BUILT_IN_TIPS.map((t) => (
-            <li key={t.id} className="p-3 rounded border border-border bg-bg">
-              <strong>{t.title}:</strong> {t.body}{' '}
-              <span className="text-xs text-muted">[{t.badge}]</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <EvidenceTipsLibrary />
+
+      <DecodeAcademicRules />
 
       <Link
         to="/help/campus-support"

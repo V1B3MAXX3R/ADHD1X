@@ -25,9 +25,60 @@ export const BlockWindowsSchema = z.object({
 });
 export type BlockWindows = z.infer<typeof BlockWindowsSchema>;
 
+// Reusable step list for similar assignments (A93).
+export const SavedRoutineSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1).max(120),
+  taskType: AssignmentTypeSchema,
+  steps: z.array(z.string().min(1).max(160)).min(1).max(8),
+});
+export type SavedRoutine = z.infer<typeof SavedRoutineSchema>;
+
+// A class or event that leaves you drained. A quiet gap is kept after it ends (Lever L7).
+export const RecoveryGapSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1).max(120),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/),
+  days: z.array(z.number().int().min(0).max(6)).min(1).max(7).default([0, 1, 2, 3, 4, 5, 6]),
+  minutes: z.number().int().min(5).max(60).default(15),
+});
+export type RecoveryGap = z.infer<typeof RecoveryGapSchema>;
+
+const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
+
+// A custom color palette. It is only applied after it passes the contrast checks (A3).
+export const CustomPaletteSchema = z.object({
+  name: z.string().min(1).max(60),
+  bg: hexColor,
+  surface: hexColor,
+  text: hexColor,
+  muted: hexColor,
+  accent: hexColor,
+  onAccent: hexColor,
+  focus: hexColor,
+  dueSoon: hexColor,
+  border: hexColor,
+});
+export type CustomPalette = z.infer<typeof CustomPaletteSchema>;
+
+// "Make it clear" checklist line (A60).
+export const ChecklistItemSchema = z.object({
+  kind: z.enum(['handIn', 'format', 'length', 'dueDate', 'grading', 'other']),
+  text: z.string().min(1).max(200),
+  checked: z.boolean().default(false),
+});
+export type ChecklistItem = z.infer<typeof ChecklistItemSchema>;
+
 export const SettingsSchema = z.object({
   ageConfirmed18: z.boolean().default(false),
   geminiNoticeAcknowledged: z.boolean().default(false),
+  // Master switch for everything that uses Gemini. Off means only built-in logic runs.
+  aiModeEnabled: z.boolean().default(true),
+  customPalette: CustomPaletteSchema.nullable().default(null),
+  savedRoutines: z.array(SavedRoutineSchema).default([]),
+  recoveryGaps: z.array(RecoveryGapSchema).default([]),
+  // Minutes per page used by the reading-time calculator (A89).
+  readingMinutesPerPage: z.number().min(1).max(10).default(2.5),
   major: z.string().optional(),
   interfaceStyle: z.enum(['space', 'regular']).default('regular'),
   theme: z.enum(['low', 'normal']).default('normal'),
@@ -111,13 +162,14 @@ export const AssignmentSchema = z.object({
   earnedPoints: z.number().min(0).max(1000).optional(), // Your own score. Stays on this device, never sent to Gemini (A36).
   percentOfGrade: z.number().min(0).max(100).optional(),
   detailsText: z.string().optional(),
+  checklist: z.array(ChecklistItemSchema).optional(),
   estimateMinutes: z.number().int().min(5).max(2400),
   estimateSource: z.enum(['default', 'user']),
   minutesLogged: z.number().int().min(0).default(0),
   status: z.enum(['todo', 'inProgress', 'done']).default('todo'),
   notNow: z.boolean().default(false),
   addedLate: z.boolean().default(false),
-  note: z.string().optional(),
+  note: z.string().max(280).optional(), // "Where was I?" note (A62). Stays on this device, never sent to Gemini.
   source: z.enum(['syllabus', 'manual', 'calendar']),
   calendarId: z.string().optional(),
   createdAt: z.string(),
@@ -131,7 +183,7 @@ export const SessionSchema = z.object({
   startedAt: z.string(),
   plannedMinutes: z.number().int().min(1),
   actualMinutes: z.number().int().min(0).optional(),
-  goalText: z.string().optional(),
+  goalText: z.string().max(200).optional(),
   outcome: z.enum(['done', 'partly', 'notYet']).optional(),
   firstMoveId: z.string().optional(),
 });

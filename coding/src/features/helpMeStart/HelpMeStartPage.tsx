@@ -4,6 +4,13 @@ import { AppShell } from '../../shared/components/AppShell';
 import { useApp, getCurrentBlockName } from '../../app/AppContext';
 import { getTemplateFirstMove, BUILT_IN_TIPS } from './templates';
 import { callFirstMovePreset, getCalmErrorMessage, AiFailureReason } from '../../shared/ai/client';
+import { LeftOffNote } from '../memory/LeftOffNote';
+import { InTaskAiHelpers } from '../gemini/InTaskAiHelpers';
+import { SavedRoutinesList } from '../gemini/SavedRoutinesList';
+import { MAX_GOAL_LENGTH } from '../memory/sessionMemory';
+import { RampInRitual } from '../focus/RampInRitual';
+import { SensoryQuickSwitch } from '../focus/SensoryQuickSwitch';
+import { MinimumViableSubmission } from '../planning/MinimumViableSubmission';
 
 export const HelpMeStartPage: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -35,6 +42,7 @@ export const HelpMeStartPage: React.FC = () => {
   const [stuckOpen, setStuckOpen] = useState(false);
   const [switchGentleShown, setSwitchGentleShown] = useState(false);
   const [templateIdx, setTemplateIdx] = useState(0);
+  const [sessionGoal, setSessionGoal] = useState('');
 
   if (!selectedTask) {
     return (
@@ -49,12 +57,11 @@ export const HelpMeStartPage: React.FC = () => {
 
   const loadFirstMove = (forceFreshGemini = false) => {
     if (!forceFreshGemini) {
-      const cached = firstMoves.find(
-        (fm) =>
-          fm.taskType === selectedTask.type &&
-          fm.sizeChoice === sizeChoice &&
-          fm.courseId === selectedTask.courseId,
-      );
+      // A saved first move for this course wins; otherwise one saved for the task type in general,
+      // such as the starter moves made when you personalized for your major.
+      const sameSize = firstMoves.filter((fm) => fm.taskType === selectedTask.type && fm.sizeChoice === sizeChoice);
+      const cached =
+        sameSize.find((fm) => fm.courseId === selectedTask.courseId) ?? sameSize.find((fm) => fm.courseId === undefined);
       if (cached) {
         setFirstMoveText(cached.firstMove);
         setExtraSteps(cached.steps);
@@ -93,7 +100,8 @@ export const HelpMeStartPage: React.FC = () => {
           createdAt: new Date().toISOString(),
         });
       } else {
-        setMoveNotice(getCalmErrorMessage((res.reason as AiFailureReason) ?? 'unavailable'));
+        const reason: AiFailureReason = res.ok ? 'invalid_output' : res.reason;
+        setMoveNotice(getCalmErrorMessage(reason));
         setFirstMoveText(fallback.firstMove);
         setExtraSteps(fallback.steps);
       }
@@ -110,6 +118,7 @@ export const HelpMeStartPage: React.FC = () => {
             <p>
               Pre-selected task: <strong>{selectedTask.name}</strong> ({courseName})
             </p>
+            <LeftOffNote assignmentId={selectedTask.id} />
             {candidates.length > 1 && (
               <div>
                 <label htmlFor="pick-other" className="block text-sm font-medium mb-1">
@@ -262,6 +271,9 @@ export const HelpMeStartPage: React.FC = () => {
               </button>
             </div>
 
+            <SavedRoutinesList taskType={selectedTask.type} />
+            <InTaskAiHelpers assignment={selectedTask} courseName={courseName} currentStepText={firstMoveText} />
+
             {showMoreSteps && (
               <ol className="list-decimal list-inside space-y-1 text-sm p-3 rounded bg-bg border border-border">
                 {extraSteps.map((s, i) => (
@@ -304,6 +316,24 @@ export const HelpMeStartPage: React.FC = () => {
             <p className="text-sm text-muted">
               Starter timer length: {settings.starterMinutes} minutes. Stopping early is always fine.
             </p>
+            <div className="space-y-1">
+              <label htmlFor="session-goal" className="block text-sm font-medium">
+                Optional: what will you do this session?
+              </label>
+              <input
+                id="session-goal"
+                type="text"
+                maxLength={MAX_GOAL_LENGTH}
+                value={sessionGoal}
+                onChange={(e) => setSessionGoal(e.target.value)}
+                className="w-full min-h-[44px] px-3 py-2 rounded border border-border bg-bg text-text"
+              />
+              <p className="text-xs text-muted">
+                At the end you can say if it was done, partly done, or not yet. Nothing is counted or scored. Stays on
+                this device.
+              </p>
+            </div>
+            <RampInRitual />
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex gap-3">
                 <button
@@ -320,6 +350,7 @@ export const HelpMeStartPage: React.FC = () => {
                       selectedTask.id,
                       settings.starterMinutes,
                       getCurrentBlockName(settings),
+                      sessionGoal,
                     );
                     navigate('/today');
                   }}
@@ -353,6 +384,9 @@ export const HelpMeStartPage: React.FC = () => {
                 </li>
               ))}
             </ul>
+
+            <SensoryQuickSwitch />
+            <MinimumViableSubmission assignment={selectedTask} />
 
             <div className="p-3 rounded border border-border bg-bg space-y-2">
               {!switchGentleShown && (

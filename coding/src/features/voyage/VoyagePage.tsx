@@ -6,6 +6,7 @@ import { pickRandomFunFact } from './funFacts';
 import { SolarSystemMap } from './components/SolarSystemMap';
 import { FunFactCard } from './components/FunFactCard';
 import { MissionLog, PlanetBadges } from './components/MissionLog';
+import { VoyageLogbook } from './components/VoyageLogbook';
 
 export const VoyagePage: React.FC = () => {
   const { settings, assignments, updateSettings } = useApp();
@@ -53,6 +54,7 @@ export const VoyagePage: React.FC = () => {
 
             <PlanetBadges status={status} />
             <MissionLog finished={finished} />
+            <VoyageLogbook space />
 
             <section aria-labelledby="facts-heading" className="space-y-3">
               <h2 id="facts-heading" className="text-lg font-bold">
@@ -75,6 +77,7 @@ export const VoyagePage: React.FC = () => {
             )}
           </div>
         )}
+        {!isSpace && <VoyageLogbook space={false} />}
       </div>
     </AppShell>
   );

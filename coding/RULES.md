@@ -5,8 +5,9 @@ You are helping build ADHD1X, a personal school helper website for a university 
 ## 1. Read these first, every task
 1. This file.
 2. `instructions/decision-log.md` (approved decisions A1 and up are requirements).
-3. `instructions/phase-5-blueprint.md` and `instructions/phase-5-technical-spec.md`, at least the sections your prompt names.
-4. If anything the prompt asks conflicts with an approved decision, stop and tell Christian. Do not pick a side.
+3. `instructions/memory/MEMORY.md` (project memory: how Christian likes to work, what is built, what is still open). Open the notes that fit your task. Add or fix a note when he states a preference or corrects you.
+4. `instructions/phase-5-blueprint.md` and `instructions/phase-5-technical-spec.md`, at least the sections your prompt names.
+5. If anything the prompt asks conflicts with an approved decision, stop and tell Christian. Do not pick a side.
 
 ## 2. Hard rules (never break these)
 1. **No secrets in code, chat, commits or logs.** The Gemini key and the access code live only in server environment variables. Never in any variable starting with `VITE_`, never in a file that is committed.

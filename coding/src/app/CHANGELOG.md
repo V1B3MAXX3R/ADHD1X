@@ -3,6 +3,24 @@
 Part of ADHD1X. Files: App.tsx, AppContext.tsx
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - finishSession can save minutes
+- Made by: Claude
+- Changed: finishSession now accepts minutes and adds them to the task's time logged.
+- Why: Christian pasted 20 original feature files (11 to 30) and asked for them to be added.
+- Notes: Only when the person taps Save and stop.
+
+## 2026-10-13 - Palette and AI Mode
+- Made by: Claude
+- Changed: A saved custom palette is applied on load. The Gemini first-use notice is skipped when AI Mode is off, since nothing is sent.
+- Why: Gemini features request.
+- Notes: None.
+
+## 2026-10-13 - Session memory in the timer
+- Made by: Claude
+- Changed: startTimer takes an optional goal and saves a session; new extendTimer (Keep going) and finishSession (saves outcome and note); stopTimer now also clears the finished task so the timer bar hides.
+- Why: A62, A91 (see memory changelog).
+- Notes: Older timers saved in the browser session still load.
+
 ## 2026-10-13 - Catch Up route
 - Made by: Claude
 - Changed: Added /catch-up.
@@ -38,6 +56,8 @@ Every change to this part gets an entry here, and one line in the main [coding/C
 - Changed: Moved into this folder as part of the project cleanup. Import paths updated. No behavior changes.
 - Why: One folder per part of the website so each part can be viewed and updated on its own.
 - Notes: Typecheck passes. Unit tests unchanged (10 of 11 pass; Case 3 in the day-plan tests is a known open item).
+
+
 
 
 

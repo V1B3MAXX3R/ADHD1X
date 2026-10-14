@@ -4,7 +4,14 @@ import { AppShell } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
 import { Assignment } from '../../shared/data/schemas';
 import { useClock } from '../../shared/clock/ClockContext';
+import { LeftOffNote } from '../memory/LeftOffNote';
+import { AssignmentAiTools } from '../gemini/AssignmentAiTools';
+import { BrainDumpPanel } from '../gemini/BrainDumpPanel';
 import { formatDueIn } from '../../shared/clock/clockLogic';
+import { DefinitionOfDoneCard } from '../planning/DefinitionOfDoneCard';
+import { MinimumViableSubmission } from '../planning/MinimumViableSubmission';
+import { ReadingTimeCalculator } from '../planning/ReadingTimeCalculator';
+import { PersonalPaceNote } from '../planning/PersonalPaceNote';
 
 export const AssignmentsPage: React.FC = () => {
   const { id: routeAssignmentId } = useParams<{ id?: string }>();
@@ -73,6 +80,12 @@ export const AssignmentsPage: React.FC = () => {
           {a.percentOfGrade ?? 'n/a'}%
         </p>
         <p>Instructions: {a.detailsText || 'No additional instructions entered.'}</p>
+        <LeftOffNote assignmentId={a.id} editable />
+        {a.type === 'reading' && <ReadingTimeCalculator assignment={a} />}
+        <PersonalPaceNote assignment={a} />
+        <DefinitionOfDoneCard assignment={a} />
+        {a.status !== 'done' && <MinimumViableSubmission assignment={a} />}
+        <AssignmentAiTools assignment={a} courseName={course?.name ?? 'General'} />
         <div className="flex flex-wrap gap-2 pt-2">
           <Link
             to={`/start/${a.id}`}
@@ -135,6 +148,15 @@ export const AssignmentsPage: React.FC = () => {
             </Link>
           </div>
         </div>
+
+        <details className="rounded-lg border border-border bg-surface">
+          <summary className="cursor-pointer min-h-[44px] flex items-center px-4 font-bold text-sm">
+            Sort my brain dump
+          </summary>
+          <div className="p-4 pt-0">
+            <BrainDumpPanel />
+          </div>
+        </details>
 
         {showNotNow && (
           <section

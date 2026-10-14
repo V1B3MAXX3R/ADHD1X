@@ -11,6 +11,11 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | Today page and day-plan engine | [src/features/today/](src/features/today/CHANGELOG.md) |
 | Calendar import (new and upcoming assignments) | [src/features/calendar/](src/features/calendar/CHANGELOG.md) |
 | Catch Up / Hyperdrive | [src/features/catchUp/](src/features/catchUp/CHANGELOG.md) |
+| Memory (Where was I? note, session goal) | [src/features/memory/](src/features/memory/CHANGELOG.md) |
+| Focus (parking lot, calm mode, ramp-in, one-tap start) | [src/features/focus/](src/features/focus/CHANGELOG.md) |
+| Planning helpers (energy, long days, recovery, reading) | [src/features/planning/](src/features/planning/CHANGELOG.md) |
+| Tips and syllabus phrases | [src/features/tips/](src/features/tips/CHANGELOG.md) |
+| Saved routines | [src/features/routines/](src/features/routines/CHANGELOG.md) |
 | Course and syllabus setup | [src/features/courses/](src/features/courses/CHANGELOG.md) |
 | Assignments list | [src/features/assignments/](src/features/assignments/CHANGELOG.md) |
 | Help me start (templates and tips) | [src/features/helpMeStart/](src/features/helpMeStart/CHANGELOG.md) |
@@ -23,8 +28,15 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | Shared (app shell, data, Gemini client, estimates, styles) | [src/shared/](src/shared/CHANGELOG.md) |
 | Component catalog (developer page) | [src/features/catalog/](src/features/catalog/CHANGELOG.md) |
 | Tests (unit, fixtures, end-to-end) | [tests/](tests/CHANGELOG.md) |
+| Gemini features (AI Mode, assignment tools, planning helpers, personalizer) | [src/features/gemini/](src/features/gemini/CHANGELOG.md) |
 | Gemini rules and safety (server) | [server/](server/CHANGELOG.md) |
 | Gemini endpoint (API) | [api/](api/CHANGELOG.md) |
+
+## 2026-10-13 - Original features 13 to 30 added
+- Made by: Claude
+- Changed: Added the pasted study helpers: time check-back, reading time, saved routines manager, all quiz questions, energy check, tips library, voyage logbook, recovery gaps, definition of done, ramp-in, 15-minute turn-in plan, parking lot, syllabus phrases, zero-decision start, two-long-days question, calm mode and nine extra fun facts. Features 11 and 12 (Where was I? note, session goal and outcome) were already built as the memory system, so they were not added twice.
+- Why: Christian pasted 20 original feature files (11 to 30) and asked for them to be added. Touched: focus, planning, tips, routines, today, settings, help, voyage, quiz, memory, assignments, helpMeStart, app, shared, tests.
+- Notes: 130 unit tests and 7 browser tests pass. Nothing was committed or pushed.
 
 ## Entry format
 
@@ -39,6 +51,18 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 
 ## Entries
 
+## 2026-10-13 - Gemini features
+- Made by: Claude (from Gemini's files)
+- Parts: gemini (new), server, api, shared, app, helpMeStart, assignments, today, settings, onboarding, tests
+- Changed: 15 Gemini presets behind one endpoint, with a master AI Mode switch and the screens for each: Make it clear, Message my professor, Ask about this assignment, pre-submission check, step breaker, practice questions, brain dump sorter, planning helpers (tune today, split time, milestones), Describe how you work, custom palette, and Personalize for my major with saved routines. Every helper has a built-in version. `npm run dev` now serves the endpoint itself.
+- Why: Christian asked for these Gemini features inside the website, in their own subfolder.
+- Notes: The pasted schema, client, server and dev-server files were adapted, not copied: they would have overwritten the Calendar, Catch Up and memory work, turned celebrations on by default, skipped most palette contrast checks and used a dev server that cannot run TypeScript. Several features are not in the decision log yet (see the gemini changelog). Needs a real Gemini key and access code for a live test. 50 new unit tests (113 total) and 1 new browser test (6 total) pass.
+## 2026-10-13 - Memory system
+- Made by: Claude
+- Parts: memory (new), app, shared, helpMeStart, today, assignments, tests
+- Changed: In the app: a session goal on Help me start, a "Done for now" wrap-up (done / partly / not yet, plus a one-line "Where was I?" note), and the note coming back on Today, Help me start and the assignment details. For AI helpers: a shared project memory in `instructions/memory/` (index, notes about Christian, how he likes to work, the project layout, open items, links), and `RULES.md` now tells every AI coder to read it first.
+- Why: Christian asked for a memory system. The app part implements the approved A62 and A91; the helper part saves him repeating himself.
+- Notes: Notes and goals never go to Gemini. Fixed on the way: the timer bar stayed on screen after "Done for now" when the timer had run out. 6 new unit tests and 1 new browser test.
 ## 2026-10-13 - Catch Up / Hyperdrive
 - Made by: Claude (from Gemini's Bucket 2 Part 2 files)
 - Parts: catchUp (new), today, settings, shared, app, tests
@@ -90,6 +114,8 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 - Changed: Created full `coding/` workspace including `package.json`, `vite.config.ts`, `tsconfig.json`, `vercel.json`, `scripts/secret-scan.mjs`, `scripts/check-contrast.mjs`, `public/manifest.json`, `public/sw.js`, data layer, pure logic (`planEngine.ts`, `quizRules.ts`, `estimates.ts`, `voyage.ts`, `templates.ts`), serverless Gemini proxy (`api/ai/[preset].ts`, `server/`), accessible UI components, all MVP routes, and unit test suites (`tests/`). (File locations here are as of that date; see the cleanup entry above for the new layout.)
 - Why: Implements approved Phase 5 Blueprint (FR-01 to FR-22) and Technical Spec (A1 to A117, T70 to T79).
 - Notes: Run `npm install && npm run check` locally in VS Code to execute typecheck, unit tests, contrast check, and secret scan.
+
+
 
 
 

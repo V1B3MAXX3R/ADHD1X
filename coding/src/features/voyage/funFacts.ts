@@ -1,3 +1,5 @@
+import { STUDY_SCIENCE_FUN_FACTS } from './studyScienceFacts';
+
 export interface FunFact {
   id: string;
   category: 'History' | 'How brains and communication work' | 'Myth busters' | 'People and community';
@@ -131,6 +133,8 @@ export const FUN_FACTS: FunFact[] = [
 ];
 
 export function pickRandomFunFact(excludeId?: string): FunFact {
-  const pool = excludeId ? FUN_FACTS.filter((f) => f.id !== excludeId) : FUN_FACTS;
+  // The 20 approved facts plus the extra study-science facts (see studyScienceFacts.ts).
+  const all = [...FUN_FACTS, ...STUDY_SCIENCE_FUN_FACTS];
+  const pool = excludeId ? all.filter((f) => f.id !== excludeId) : all;
   return pool[Math.floor(Math.random() * pool.length)] ?? FUN_FACTS[0];
 }
