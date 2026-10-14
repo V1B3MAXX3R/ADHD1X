@@ -2,6 +2,7 @@ const PALETTES = {
   lowLight: { bg: '#F6F3EE', surface: '#FFFFFF', text: '#26231F', muted: '#5A554D', accent: '#2F6168', onAccent: '#FFFFFF', focus: '#1B4FA3', dueSoon: '#8A4B08', border: '#8C857A' },
   lowDim:   { bg: '#1E1D1B', surface: '#2A2825', text: '#EDE8E0', muted: '#BDB6AB', accent: '#7FB8BF', onAccent: '#1E1D1B', focus: '#8DB8FF', dueSoon: '#F0B36A', border: '#8F887C' },
   space:    { bg: '#0F1430', surface: '#1A2147', text: '#EEF0FA', muted: '#B8BEDD', accent: '#5FD0C4', onAccent: '#0F1430', focus: '#FFD66B', dueSoon: '#FFB454', border: '#8A93C4' },
+  cosmos:   { bg: '#E2DED9', surface: '#EFECE7', text: '#0D0D0D', muted: '#55534F', accent: '#0D0D0D', onAccent: '#E2DED9', focus: '#0D0D0D', dueSoon: '#7A1F1F', border: '#0D0D0D' },
   standard: { bg: '#FFFFFF', surface: '#F3F5F9', text: '#1B1F2A', muted: '#4B5565', accent: '#1F5FBF', onAccent: '#FFFFFF', focus: '#B54708', dueSoon: '#8A4B08', border: '#7A8394' },
 };
 
@@ -40,4 +41,4 @@ for (const [name, p] of Object.entries(PALETTES)) {
 }
 
 if (failed) process.exit(1);
-console.log('Contrast check passed for all 4 palettes (WCAG 1.4.3 & 1.4.11).');
+console.log('Contrast check passed for all 5 palettes (WCAG 1.4.3 & 1.4.11).');

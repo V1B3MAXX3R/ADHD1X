@@ -3,6 +3,12 @@
 Part of ADHD1X. Files: App.tsx, AppContext.tsx
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - Route /cosmos
+- Made by: Claude
+- Changed: Added the /cosmos route (behind the age check).
+- Why: Christian pasted the pulp-comic Cosmos UI (ui0 to ui10) and asked for it to go in a ui folder with the changelog updated.
+- Notes: / still goes to Today.
+
 ## 2026-10-13 - finishSession can save minutes
 - Made by: Claude
 - Changed: finishSession now accepts minutes and adds them to the task's time logged.

@@ -46,6 +46,7 @@ test.describe('ADHD1X end-to-end and WCAG 2.2 AA accessibility (P16)', () => {
         ['/assignments', 'Assignments'],
         ['/calendar', 'Calendar'],
         ['/voyage', spaceOn ? 'Voyage' : 'Progress'],
+        ['/cosmos', 'Cosmos'],
         ['/catch-up', spaceOn ? 'Hyperdrive (Catch Up)' : 'Catch-up mode'],
         ['/settings/display', 'Settings'],
         ['/settings/privacy', 'Settings'],
@@ -58,6 +59,7 @@ test.describe('ADHD1X end-to-end and WCAG 2.2 AA accessibility (P16)', () => {
           window.dispatchEvent(new PopStateEvent('popstate'));
         }, path);
         await expect(page.locator('h1')).toContainText(title);
+        if (path === '/cosmos') await page.waitForTimeout(700); // let the fade-in finish before scanning
         const results = await new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
           .analyze();
@@ -368,6 +370,81 @@ test.describe('ADHD1X end-to-end and WCAG 2.2 AA accessibility (P16)', () => {
     await page.getByRole('button', { name: 'Sensory load' }).click();
     await expect(page.getByText('Turn down brightness and motion')).toBeVisible();
     await axeScan('help');
+  });
+
+  test('Cosmos view: tabs work with the keyboard, motion can be paused, fun fact shows in Space style only', async ({ page }) => {
+    await page.goto('/welcome');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByLabel("I'm 18 or older (required)").check();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Skip remaining questions' }).click();
+    await page.getByRole('button', { name: 'Skip for now' }).click();
+    await page.getByRole('button', { name: 'Skip to Today' }).click();
+    await expect(page.locator('h1')).toContainText('Today');
+    await page.evaluate(() => {
+      window.history.pushState({}, '', '/cosmos');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await expect(page.locator('h1')).toContainText('Cosmos');
+    await expect(page.getByRole('complementary', { name: 'Fun fact' })).toHaveCount(0);
+
+    await page.getByRole('tab', { name: /Planets/ }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByRole('tab', { name: /Deep space/ })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('heading', { name: 'Hyperdrive catch-up' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Pause animations' }).click();
+    await expect(page.getByRole('button', { name: 'Pause animations' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'off');
+
+    await page.getByRole('button', { name: /Space mode:/ }).click();
+    await expect(page.getByRole('complementary', { name: 'Fun fact' })).toBeVisible();
+  });
+
+  test('Cosmos look stays on every page once switched on, and those pages pass accessibility checks', async ({ page }) => {
+    await page.goto('/welcome');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByLabel("I'm 18 or older (required)").check();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Skip remaining questions' }).click();
+    await page.getByRole('button', { name: 'Skip for now' }).click();
+    await page.getByRole('button', { name: 'Skip to Today' }).click();
+    await expect(page.locator('h1')).toContainText('Today');
+    await expect(page.locator('html')).toHaveAttribute('data-look', 'normal');
+
+    const goInApp = async (path: string) => {
+      await page.evaluate((p) => {
+        window.history.pushState({}, '', p);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }, path);
+    };
+    await goInApp('/cosmos');
+    await page.getByRole('button', { name: 'Use this look on every page' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-look', 'cosmos');
+
+    for (const [path, title] of [
+      ['/today', 'Today'],
+      ['/assignments', 'Assignments'],
+      ['/calendar', 'Calendar'],
+      ['/voyage', 'Progress'],
+      ['/catch-up', 'Catch-up mode'],
+      ['/settings/display', 'Settings'],
+      ['/settings/planning', 'Settings'],
+      ['/help', 'How ADHD1X works'],
+    ]) {
+      await goInApp(path);
+      await expect(page.locator('h1')).toContainText(title);
+      await expect(page.locator('html')).toHaveAttribute('data-look', 'cosmos');
+      await expect(page.getByRole('region', { name: 'Page header' })).toBeVisible();
+      await expect(page.getByRole('contentinfo')).toBeVisible();
+      const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+      expect(r.violations, `${path} with Cosmos look`).toEqual([]);
+    }
+
+    // And it can be switched off from Settings.
+    await goInApp('/settings/display');
+    await page.getByLabel(/Cosmos look on every page/).uncheck();
+    await expect(page.locator('html')).toHaveAttribute('data-look', 'normal');
   });
 
   test('catalog page passes axe-core WCAG 2.2 AA checks in all 4 palettes', async ({ page }) => {

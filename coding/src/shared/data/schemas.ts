@@ -119,6 +119,8 @@ export const SettingsSchema = z.object({
   quietEnd: z.string().default('06:00'),
   notificationSounds: z.boolean().default(false),
   voyageHidden: z.boolean().default(false),
+  // The pulp-comic Cosmos look on every page. Off until the person switches it on.
+  cosmosLook: z.boolean().default(false),
   // Catch Up (called Hyperdrive in Space style). Only the person switches it on (A39). Local only (A36).
   catchUp: z
     .object({

@@ -10,6 +10,8 @@ import { ParkingLot } from '../../features/focus/ParkingLot';
 import { ClockDisplay } from '../clock/ClockDisplay';
 import { ClockNotices } from '../clock/ClockNotices';
 import { ExportReminder } from '../../features/settings/ExportReminder';
+import { CosmosHero } from '../../features/ui/components/CosmosHero';
+import { CosmosFooter } from '../../features/ui/components/CosmosFooter';
 
 export const WhyOnNote: React.FC<{
   settingKey: keyof Settings;
@@ -35,7 +37,11 @@ export const WhyOnNote: React.FC<{
 export const AppShell: React.FC<{
   title: string;
   children: React.ReactNode;
-}> = ({ title, children }) => {
+  /** Wider content area, for screens with two columns (the Cosmos view). */
+  wide?: boolean;
+  /** In the Cosmos look, skip the big page header (the page draws its own). */
+  noHero?: boolean;
+}> = ({ title, children, wide, noHero }) => {
   const { settings, updateSettings, storageBlocked, timer, pauseResumeTimer, stopTimer, extendTimer, assignments, blockChangePromptOpen, dismissBlockChangePrompt } = useApp();
   const [helpOpen, setHelpOpen] = useState(false);
   const [wrapUpOpen, setWrapUpOpen] = useState(false);
@@ -62,10 +68,120 @@ export const AppShell: React.FC<{
 
   const activeTask = assignments.find((a) => a.id === timer.assignmentId);
   const isSpace = settings.interfaceStyle === 'space';
+  const cosmos = settings.cosmosLook;
+
+  const navLinkClass = (active: boolean) =>
+    cosmos
+      ? `min-h-[44px] px-4 py-2 border-2 border-[#0D0D0D] text-sm font-bold uppercase tracking-wider flex items-center ${
+          active ? 'bg-[#0D0D0D] text-[#E2DED9]' : 'bg-[#E2DED9] text-[#0D0D0D] hover:bg-[#d3cfc9]'
+        }`
+      : `min-h-[44px] min-w-[44px] px-3 py-2 rounded flex items-center font-medium ${
+          active ? 'bg-accent text-on-accent' : 'text-text hover:bg-bg'
+        }`;
+
+  // The five menu items are the same, in the same order, in both looks (A73, A100).
+  const navLinks = (
+    <>
+      <NavLink to="/today" className={({ isActive }) => navLinkClass(isActive)}>
+        Today
+      </NavLink>
+      <NavLink to="/assignments" className={({ isActive }) => navLinkClass(isActive)}>
+        Assignments
+      </NavLink>
+      <NavLink to="/calendar" className={({ isActive }) => navLinkClass(isActive)}>
+        Calendar
+      </NavLink>
+      {!settings.voyageHidden && (
+        <NavLink to="/voyage" className={({ isActive }) => navLinkClass(isActive)}>
+          {isSpace && !cosmos && <span aria-hidden="true">🪐&nbsp;</span>}
+          {isSpace ? 'Voyage' : 'Progress'}
+        </NavLink>
+      )}
+      <NavLink
+        to="/settings/display"
+        className={({ isActive }) => navLinkClass(isActive || location.pathname.startsWith('/settings'))}
+      >
+        Settings
+      </NavLink>
+    </>
+  );
+
+  const notices = (
+    <>
+      {storageBlocked && (
+        <div role="status" className="bg-surface border-b border-border px-4 py-2 text-sm">
+          Data cannot be saved permanently in this private browser window, but you can keep using ADHD1X for this session.
+        </div>
+      )}
+
+      <ClockNotices />
+      <ExportReminder />
+
+      {blockChangePromptOpen && (
+        <div
+          role="region"
+          aria-label="Study block ended notice"
+          className="m-4 p-4 rounded border-2 border-focus bg-surface text-text"
+        >
+          <p className="font-bold">Your study block just ended.</p>
+          <p className="text-sm mt-1">
+            You&apos;re still working on: <strong>{activeTask?.name ?? 'current task'}</strong> (timer keeps running).
+          </p>
+          <p className="text-sm text-muted mt-2">
+            Switching to something lighter can give your brain a breather, so you finish the day still feeling productive. Your call.
+          </p>
+          <div className="flex flex-wrap gap-3 mt-3">
+            <button
+              type="button"
+              onClick={dismissBlockChangePrompt}
+              className="min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
+            >
+              Keep the same task
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                stopTimer();
+                navigate('/today');
+              }}
+              className="min-h-[44px] px-4 py-2 rounded border border-border bg-bg text-text font-medium"
+            >
+              Change it
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  const toolButtons = (
+    <>
+      <ClockDisplay />
+      {/* Changes the look only. It does not change any other setting (A57). */}
+      <button
+        type="button"
+        aria-pressed={isSpace}
+        onClick={() => void updateSettings({ interfaceStyle: isSpace ? 'regular' : 'space' })}
+        className="min-h-[44px] px-3 py-2 rounded border border-border bg-bg text-text text-sm font-medium"
+      >
+        Space mode: {isSpace ? 'on' : 'off'}
+      </button>
+      <button
+        ref={helpBtnRef}
+        type="button"
+        onClick={() => setHelpOpen(true)}
+        className="min-h-[44px] min-w-[44px] px-4 py-2 rounded border border-border bg-bg text-text font-medium"
+      >
+        Help
+      </button>
+    </>
+  );
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-bg text-text relative">
-      <SpaceBackground />
+    <div
+      className={`app-root min-h-screen flex flex-col ${cosmos ? '' : 'lg:flex-row'} bg-bg text-text relative`}
+    >
+      {!cosmos && <SpaceBackground />}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-accent focus:text-on-accent focus:px-4 focus:py-2 focus:rounded"
@@ -73,149 +189,67 @@ export const AppShell: React.FC<{
         Skip to main content
       </a>
 
-      <nav
-        aria-label="Main navigation"
-        className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-surface/95 lg:static lg:w-56 lg:border-t-0 lg:border-r lg:min-h-screen flex lg:flex-col justify-around lg:justify-start p-2 gap-2"
-      >
-        <div className="hidden lg:block px-3 py-4 font-bold text-lg">
-          {isSpace && <span aria-hidden="true">🚀 </span>}ADHD1X
-        </div>
-        <NavLink
-          to="/today"
-          className={({ isActive }) =>
-            `min-h-[44px] min-w-[44px] px-3 py-2 rounded flex items-center font-medium ${
-              isActive ? 'bg-accent text-on-accent' : 'text-text hover:bg-bg'
-            }`
-          }
+      {!cosmos && (
+        <nav
+          aria-label="Main navigation"
+          className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-surface/95 lg:static lg:w-56 lg:border-t-0 lg:border-r lg:min-h-screen flex lg:flex-col justify-around lg:justify-start p-2 gap-2"
         >
-          Today
-        </NavLink>
-        <NavLink
-          to="/assignments"
-          className={({ isActive }) =>
-            `min-h-[44px] min-w-[44px] px-3 py-2 rounded flex items-center font-medium ${
-              isActive ? 'bg-accent text-on-accent' : 'text-text hover:bg-bg'
-            }`
-          }
-        >
-          Assignments
-        </NavLink>
-        <NavLink
-          to="/calendar"
-          className={({ isActive }) =>
-            `min-h-[44px] min-w-[44px] px-3 py-2 rounded flex items-center font-medium ${
-              isActive ? 'bg-accent text-on-accent' : 'text-text hover:bg-bg'
-            }`
-          }
-        >
-          Calendar
-        </NavLink>
-        {!settings.voyageHidden && (
-          <NavLink
-            to="/voyage"
-            className={({ isActive }) =>
-              `min-h-[44px] min-w-[44px] px-3 py-2 rounded flex items-center font-medium ${
-                isActive ? 'bg-accent text-on-accent' : 'text-text hover:bg-bg'
-              }`
-            }
-          >
-            {isSpace && <span aria-hidden="true">🪐&nbsp;</span>}
-            {isSpace ? 'Voyage' : 'Progress'}
-          </NavLink>
-        )}
-        <NavLink
-          to="/settings/display"
-          className={({ isActive }) =>
-            `min-h-[44px] min-w-[44px] px-3 py-2 rounded flex items-center font-medium ${
-              isActive || location.pathname.startsWith('/settings')
-                ? 'bg-accent text-on-accent'
-                : 'text-text hover:bg-bg'
-            }`
-          }
-        >
-          Settings
-        </NavLink>
-      </nav>
-
-      <div className="flex-1 flex flex-col pb-36 lg:pb-24 relative z-10">
-        <header className="flex items-center justify-between border-b border-border px-4 py-3 bg-surface/90">
-          <span className="font-bold lg:hidden">ADHD1X</span>
-          <div className="ml-auto flex items-center gap-2">
-            <ClockDisplay />
-            {/* Changes the look only. It does not change any other setting (A57). */}
-            <button
-              type="button"
-              aria-pressed={isSpace}
-              onClick={() => void updateSettings({ interfaceStyle: isSpace ? 'regular' : 'space' })}
-              className="min-h-[44px] px-3 py-2 rounded border border-border bg-bg text-text text-sm font-medium"
-            >
-              Space mode: {isSpace ? 'on' : 'off'}
-            </button>
-            <button
-              ref={helpBtnRef}
-              type="button"
-              onClick={() => setHelpOpen(true)}
-              className="min-h-[44px] min-w-[44px] px-4 py-2 rounded border border-border bg-bg text-text font-medium"
-            >
-              Help
-            </button>
+          <div className="hidden lg:block px-3 py-4 font-bold text-lg">
+            {isSpace && <span aria-hidden="true">🚀 </span>}ADHD1X
           </div>
-        </header>
+          {navLinks}
+        </nav>
+      )}
 
-        {storageBlocked && (
-          <div role="status" className="bg-surface border-b border-border px-4 py-2 text-sm">
-            Data cannot be saved permanently in this private browser window, but you can keep using ADHD1X for this session.
-          </div>
-        )}
-
-        <ClockNotices />
-        <ExportReminder />
-
-        {blockChangePromptOpen && (
-          <div
-            role="region"
-            aria-label="Study block ended notice"
-            className="m-4 p-4 rounded border-2 border-focus bg-surface text-text"
-          >
-            <p className="font-bold">Your study block just ended.</p>
-            <p className="text-sm mt-1">
-              You&apos;re still working on: <strong>{activeTask?.name ?? 'current task'}</strong> (timer keeps running).
-            </p>
-            <p className="text-sm text-muted mt-2">
-              Switching to something lighter can give your brain a breather, so you finish the day still feeling productive. Your call.
-            </p>
-            <div className="flex flex-wrap gap-3 mt-3">
-              <button
-                type="button"
-                onClick={dismissBlockChangePrompt}
-                className="min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
-              >
-                Keep the same task
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  stopTimer();
-                  navigate('/today');
-                }}
-                className="min-h-[44px] px-4 py-2 rounded border border-border bg-bg text-text font-medium"
-              >
-                Change it
-              </button>
+      <div className={`flex-1 flex flex-col ${cosmos ? 'pb-28' : 'pb-36 lg:pb-24'} relative z-10`}>
+        {cosmos ? (
+          <header className="border-b-[3px] border-[#0D0D0D] bg-[#E2DED9]">
+            <div className="bg-[#0D0D0D] text-[#E2DED9] px-4 py-1 text-xs flex flex-wrap items-center justify-between gap-2 font-mono">
+              <span className="font-bold tracking-widest">ADHD1X // PULP COSMOS</span>
+              <span>
+                PROPULSION:{' '}
+                <strong className="underline">{settings.catchUp.on ? 'HYPERDRIVE ON' : 'STANDARD ORBIT'}</strong>
+                {' • '}GEMINI: <strong>{settings.aiModeEnabled ? 'ON' : 'OFF'}</strong>
+              </span>
             </div>
-          </div>
+            <div className="max-w-6xl w-full mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+              <Link to="/today" className="pulp-display-title !text-3xl !leading-none" aria-label="ADHD1X, go to Today">
+                ADHD1X
+              </Link>
+              <nav aria-label="Main navigation" className="flex flex-wrap gap-2">
+                {navLinks}
+              </nav>
+              <div className="flex flex-wrap items-center gap-2">{toolButtons}</div>
+            </div>
+          </header>
+        ) : (
+          <header className="flex items-center justify-between border-b border-border px-4 py-3 bg-surface/90">
+            <span className="font-bold lg:hidden">ADHD1X</span>
+            <div className="ml-auto flex items-center gap-2">{toolButtons}</div>
+          </header>
         )}
 
-        <main id="main-content" className="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6">
-          <h1
-            ref={headingRef}
-            tabIndex={-1}
-            className="text-2xl font-bold mb-4 outline-none"
-          >
-            {title}
-          </h1>
+        {cosmos && !noHero && <CosmosHero title={title} pathname={location.pathname} headingRef={headingRef} />}
+
+        {notices}
+
+        <main
+          id="main-content"
+          className={`flex-1 ${wide || cosmos ? 'max-w-6xl' : 'max-w-3xl'} w-full mx-auto p-4 sm:p-6`}
+        >
+          {(!cosmos || noHero) && (
+            <h1
+              ref={headingRef}
+              tabIndex={-1}
+              className={`text-2xl font-bold mb-4 outline-none ${cosmos ? 'sr-only' : ''}`}
+            >
+              {title}
+            </h1>
+          )}
           {children}
         </main>
+
+        {cosmos && <CosmosFooter />}
       </div>
 
       <div role="status" aria-live="polite" className="sr-only">
@@ -225,7 +259,7 @@ export const AppShell: React.FC<{
       {(timer.running || timer.secondsRemaining === 0) && timer.assignmentId && (
         <aside
           aria-label="Study timer"
-          className="fixed bottom-16 lg:bottom-0 left-0 lg:left-56 right-0 z-20 border-t border-border bg-surface px-4 py-3 flex flex-wrap items-center justify-between gap-3"
+          className={`fixed ${cosmos ? 'bottom-0 left-0' : 'bottom-16 lg:bottom-0 left-0 lg:left-56'} right-0 z-20 border-t border-border bg-surface px-4 py-3 flex flex-wrap items-center justify-between gap-3`}
         >
           <div className="flex items-center gap-3">
             <span className="font-medium">{activeTask?.name ?? 'Task'}</span>

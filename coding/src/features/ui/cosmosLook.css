@@ -1,0 +1,66 @@
+/* The Cosmos look, applied to every page when Settings > Display > "Cosmos look" is on.
+   It works by replacing the color tokens (so every existing screen picks it up) and then adding the
+   print-style details: monospace type, square ink-outlined cards, and halftone paper.
+   The selector is made specific on purpose so it wins over the theme and Dim colors (A57: it is a
+   separate look, chosen by the person). A custom palette from the personalizer still wins over it. */
+
+html:root[data-look='cosmos'][data-theme][data-dim] {
+  --color-bg: #E2DED9;
+  --color-surface: #EFECE7;
+  --color-text: #0D0D0D;
+  --color-muted: #55534F;
+  --color-accent: #0D0D0D;
+  --color-on-accent: #E2DED9;
+  --color-focus: #0D0D0D;
+  --color-due-soon: #7A1F1F;
+  --color-border: #0D0D0D;
+}
+
+html[data-look='cosmos'] body,
+html[data-look='cosmos'] button,
+html[data-look='cosmos'] input,
+html[data-look='cosmos'] select,
+html[data-look='cosmos'] textarea {
+  font-family: 'Courier New', Courier, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
+
+/* Halftone paper behind everything */
+html[data-look='cosmos'] .app-root {
+  background-image: radial-gradient(#817E7B 1.1px, transparent 1.1px), radial-gradient(#6A6966 0.75px, #E2DED9 0.75px);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 6px;
+}
+
+/* Square corners and heavy ink lines */
+html[data-look='cosmos'] .rounded,
+html[data-look='cosmos'] .rounded-lg {
+  border-radius: 0;
+}
+
+html[data-look='cosmos'] .border {
+  border-width: 2px;
+}
+
+/* Cards: ink frame with an offset shadow */
+html[data-look='cosmos'] .bg-surface.border,
+html[data-look='cosmos'] .bg-surface.rounded {
+  box-shadow: 4px 4px 0 #0D0D0D;
+}
+
+/* Buttons that carry the main action */
+html[data-look='cosmos'] .bg-accent {
+  font-weight: 800;
+  box-shadow: 3px 3px 0 #6A6966;
+}
+
+/* Page title, same style as the Cosmos headline */
+html[data-look='cosmos'] #main-content > h1 {
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', system-ui, sans-serif;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 #817E7B;
+}
+
+html[data-look='cosmos'] .app-root :focus-visible {
+  outline-color: #0D0D0D !important;
+}

@@ -19,3 +19,4 @@ Last updated 2026-10-13. Remove an item when it is settled.
 - **Original features 13 to 30** were added on request (2026-10-13) but are not in the decision log yet: recovery gaps (L7), calm mode, parking lot, zero-decision start, ramp-in, 15-minute turn-in plan, done-list, tips library, syllabus phrase guide, logbook UI. Log them if Christian agrees.
 - **Nine extra fun facts (FF21 to FF29)** are not on the approved list of 20 (A34, A77). Their sources need checking before they count as approved. FF30 was left out (the source does not support the claim).
 - **Recovery gaps** only show a quiet-time note on Today. They do not move tasks in the plan engine yet.
+- **Cosmos view (/cosmos)** was added on request and is not in the decision log. It uses fixed paper-and-ink colors, so custom palettes and Dim mode do not recolor it. Decide whether it becomes the Space-style home, stays a side page, or gets palette support.

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AppShell } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
 import { computeVoyageStatus } from './voyage';
@@ -51,6 +52,13 @@ export const VoyagePage: React.FC = () => {
               </div>
               <SolarSystemMap status={status} />
             </section>
+
+            <Link
+              to="/cosmos"
+              className="inline-block min-h-[44px] px-4 py-2 rounded border border-border bg-surface font-medium"
+            >
+              Open the Cosmos view
+            </Link>
 
             <PlanetBadges status={status} />
             <MissionLog finished={finished} />

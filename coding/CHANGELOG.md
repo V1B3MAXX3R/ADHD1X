@@ -16,6 +16,7 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | Planning helpers (energy, long days, recovery, reading) | [src/features/planning/](src/features/planning/CHANGELOG.md) |
 | Tips and syllabus phrases | [src/features/tips/](src/features/tips/CHANGELOG.md) |
 | Saved routines | [src/features/routines/](src/features/routines/CHANGELOG.md) |
+| UI (Cosmos view) | [src/features/ui/](src/features/ui/CHANGELOG.md) |
 | Course and syllabus setup | [src/features/courses/](src/features/courses/CHANGELOG.md) |
 | Assignments list | [src/features/assignments/](src/features/assignments/CHANGELOG.md) |
 | Help me start (templates and tips) | [src/features/helpMeStart/](src/features/helpMeStart/CHANGELOG.md) |
@@ -31,6 +32,24 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | Gemini features (AI Mode, assignment tools, planning helpers, personalizer) | [src/features/gemini/](src/features/gemini/CHANGELOG.md) |
 | Gemini rules and safety (server) | [server/](server/CHANGELOG.md) |
 | Gemini endpoint (API) | [api/](api/CHANGELOG.md) |
+
+## 2026-10-13 - Whole site in the Cosmos form
+- Made by: Claude
+- Changed: The Cosmos look now gives every page the Cosmos layout (masthead, header band with illustration, footer), not only the colors. Touched: ui, shared, tests.
+- Why: Christian said the whole website must be built in the Cosmos form, not just one piece.
+- Notes: 130 unit tests and 9 browser tests pass. Nothing was committed or pushed.
+
+## 2026-10-13 - Cosmos look on every page
+- Made by: Claude
+- Changed: Cosmos look is now an app-wide setting instead of one page. Touched: ui, shared, settings, tests.
+- Why: Christian reported that the Cosmos UI disappeared when he clicked other pages.
+- Notes: 130 unit tests and 9 browser tests pass. Nothing was committed or pushed.
+
+## 2026-10-13 - Cosmos view added (pulp-comic UI)
+- Made by: Claude
+- Changed: New page /cosmos with a retro pulp-comic look, three tabs, animated illustrations and live mission-log cards. framer-motion added as a dependency. Touched: ui, voyage, app, shared, tests.
+- Why: Christian pasted the pulp-comic Cosmos UI (ui0 to ui10) and asked for it to go in a ui folder with the changelog updated.
+- Notes: 130 unit tests and 8 browser tests pass. Nothing was committed or pushed.
 
 ## 2026-10-13 - Original features 13 to 30 added
 - Made by: Claude

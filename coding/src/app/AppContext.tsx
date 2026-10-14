@@ -168,6 +168,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     root.setAttribute('data-dim', settings.dim ? 'on' : 'off');
     root.setAttribute('data-motion', settings.motion ? 'on' : 'off');
     root.setAttribute('data-spacing', settings.spacing);
+    root.setAttribute('data-look', settings.cosmosLook ? 'cosmos' : 'normal');
     root.style.fontSize = `${settings.textScale}%`;
     applyCustomPalette(settings.customPalette);
   }, [settings]);

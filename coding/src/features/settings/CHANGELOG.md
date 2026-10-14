@@ -3,6 +3,12 @@
 Part of ADHD1X. Files: SettingsPage.tsx
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - Cosmos look switch
+- Made by: Claude
+- Changed: Display has a Cosmos look on every page checkbox.
+- Why: Christian reported that the Cosmos UI disappeared when he clicked other pages.
+- Notes: See the ui changelog.
+
 ## 2026-10-13 - Calm mode, recovery gaps, routines and all quiz questions
 - Made by: Claude
 - Changed: Display: calm mode switch. Planning: recovery gaps. Help and tone: saved routines. My answers: all quiz questions in four groups.

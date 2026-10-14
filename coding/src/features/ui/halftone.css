@@ -1,0 +1,123 @@
+/* Cosmos view: 1950s pulp print look (paper, ink, halftone dots, woodcut hatching).
+   Gray text uses --pulp-gray-text, which passes 4.5:1 on the paper color (A3). */
+
+.pulp-shell {
+  --pulp-canvas: #E2DED9;
+  --pulp-ink: #0D0D0D;
+  --pulp-gray-text: #5A5856;
+  --pulp-gray-dark: #6A6966;
+  --pulp-gray-mid: #817E7B;
+
+  color: var(--pulp-ink);
+  font-family: 'Courier New', Courier, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Paper grain and halftone dot screening */
+.pulp-halftone-surface {
+  background-color: var(--pulp-canvas);
+  background-image: radial-gradient(var(--pulp-gray-mid) 1.1px, transparent 1.1px),
+    radial-gradient(var(--pulp-gray-dark) 0.75px, var(--pulp-canvas) 0.75px);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 6px;
+}
+
+/* Diagonal woodcut cross-hatching */
+.pulp-woodcut-hatch {
+  background-image: repeating-linear-gradient(
+      45deg,
+      rgba(13, 13, 13, 0.14) 0px,
+      rgba(13, 13, 13, 0.14) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(106, 105, 102, 0.12) 0px,
+      rgba(106, 105, 102, 0.12) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+}
+
+/* Heavy ink frame with an offset shadow */
+.pulp-ink-card {
+  background-color: var(--pulp-canvas);
+  border: 2.5px solid var(--pulp-ink);
+  box-shadow: 6px 6px 0px var(--pulp-ink), 10px 10px 0px var(--pulp-gray-dark);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.pulp-ink-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 8px 8px 0px var(--pulp-ink), 12px 12px 0px var(--pulp-gray-dark);
+}
+
+.pulp-ink-button {
+  background-color: var(--pulp-ink);
+  color: var(--pulp-canvas);
+  border: 2px solid var(--pulp-ink);
+  box-shadow: 4px 4px 0px var(--pulp-gray-dark);
+  min-height: 44px;
+  min-width: 44px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.pulp-ink-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0px var(--pulp-gray-dark);
+}
+
+.pulp-ink-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--pulp-gray-dark);
+}
+
+.pulp-ink-button-secondary {
+  background-color: var(--pulp-canvas);
+  color: var(--pulp-ink);
+  border: 2px solid var(--pulp-ink);
+  box-shadow: 3px 3px 0px var(--pulp-ink);
+  min-height: 44px;
+  min-width: 44px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pulp-ink-button[aria-pressed='true'],
+.pulp-ink-button-secondary[aria-pressed='true'] {
+  background-color: var(--pulp-ink);
+  color: var(--pulp-canvas);
+}
+
+/* Fluid headline type */
+.pulp-display-title {
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', system-ui, sans-serif;
+  font-size: clamp(2rem, 4.2vw, 3.6rem);
+  line-height: 0.98;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--pulp-ink);
+  text-shadow: 3px 3px 0px var(--pulp-gray-mid);
+  overflow-wrap: anywhere;
+}
+
+/* The app's "Motion" setting (data-motion="off") and the system setting both stop the hover shifts. */
+:root[data-motion='off'] .pulp-ink-card,
+:root[data-motion='off'] .pulp-ink-button {
+  transition: none !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulp-ink-card,
+  .pulp-ink-button {
+    transition: none !important;
+    transform: none !important;
+  }
+}

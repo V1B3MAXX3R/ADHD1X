@@ -3,6 +3,24 @@
 Part of ADHD1X. Files: components/AppShell.tsx, data/database.ts, data/schemas.ts, ai/client.ts, logic/estimates.ts, styles/tokens.css
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - AppShell has a Cosmos frame
+- Made by: Claude
+- Changed: AppShell now draws a different frame (top masthead, page header band, footer) when the Cosmos look is on, and takes a noHero option.
+- Why: Christian said the whole website must be built in the Cosmos form, not just one piece.
+- Notes: The normal look is unchanged.
+
+## 2026-10-13 - cosmosLook setting
+- Made by: Claude
+- Changed: New setting cosmosLook (default off), a data-look attribute on the page, an app-root class on the shell, and the cosmos palette in the contrast check.
+- Why: Christian reported that the Cosmos UI disappeared when he clicked other pages.
+- Notes: Saved-data version stays 2.
+
+## 2026-10-13 - AppShell wide option
+- Made by: Claude
+- Changed: AppShell takes an optional wide prop (content area max-w-6xl instead of max-w-3xl).
+- Why: Christian pasted the pulp-comic Cosmos UI (ui0 to ui10) and asked for it to go in a ui folder with the changelog updated.
+- Notes: Only the Cosmos view uses it.
+
 ## 2026-10-13 - Two new settings and a logbook save function
 - Made by: Claude
 - Changed: Settings: recoveryGaps and readingMinutesPerPage (with defaults, so old saved data still loads). Database: saveLogbookEntry.

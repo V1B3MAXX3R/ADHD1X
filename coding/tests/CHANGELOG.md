@@ -3,6 +3,24 @@
 Part of ADHD1X. Folders: unit/, fixtures/, e2e/ (plus ../playwright.config.ts and ../MANUAL_CHECKLIST.md)
 Every change to the tests gets an entry here, and one line in the main [coding/CHANGELOG.md](../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - Cosmos frame check
+- Made by: Claude
+- Changed: The Cosmos look test also checks each page has the page header band and the footer.
+- Why: Christian said the whole website must be built in the Cosmos form, not just one piece.
+- Notes: Still 9 browser tests.
+
+## 2026-10-13 - Cosmos look test
+- Made by: Claude
+- Changed: A browser test switches the look on, visits 8 pages with an accessibility scan on each, and switches it off.
+- Why: Christian reported that the Cosmos UI disappeared when he clicked other pages.
+- Notes: Total now 130 unit tests and 9 browser tests.
+
+## 2026-10-13 - Cosmos tests
+- Made by: Claude
+- Changed: Added /cosmos to the accessibility scan (both styles) and a browser test for the keyboard tabs, Pause animations and the Space-only fun fact.
+- Why: Christian pasted the pulp-comic Cosmos UI (ui0 to ui10) and asked for it to go in a ui folder with the changelog updated.
+- Notes: Total now 130 unit tests and 8 browser tests.
+
 ## 2026-10-13 - Tests for the study helpers
 - Made by: Claude
 - Changed: 17 new unit tests (studyHelpers.test.ts) and one new browser test with accessibility scans covering the details tools, parking lot, minutes box, Today helpers, settings tools, logbook and Help.

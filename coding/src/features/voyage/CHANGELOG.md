@@ -3,6 +3,12 @@
 Part of ADHD1X. Files: VoyagePage.tsx, voyage.ts
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-13 - Link to the Cosmos view
+- Made by: Claude
+- Changed: Space style: an Open the Cosmos view link above the stops list.
+- Why: Christian pasted the pulp-comic Cosmos UI (ui0 to ui10) and asked for it to go in a ui folder with the changelog updated.
+- Notes: See the ui changelog.
+
 ## 2026-10-13 - Logbook and nine extra study facts
 - Made by: Claude
 - Changed: (1) A logbook of past voyages (A54): save a snapshot any time; it never resets progress. In regular style it is called Past semesters. (2) Nine extra fun facts about how studying works (FF21 to FF29), kept in their own file.

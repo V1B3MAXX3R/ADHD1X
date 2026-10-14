@@ -9,6 +9,7 @@ import { HelpMeStartPage } from '../features/helpMeStart/HelpMeStartPage';
 import { AssignmentsPage } from '../features/assignments/AssignmentsPage';
 import { VoyagePage } from '../features/voyage/VoyagePage';
 import { CalendarPage } from '../features/calendar/CalendarPage';
+import { PulpSpaceShell } from '../features/ui/PulpSpaceShell';
 import { CatchUpPage } from '../features/catchUp/CatchUpPage';
 import { CatalogPage } from '../features/catalog/CatalogPage';
 import { ClockProvider } from '../shared/clock/ClockContext';
@@ -102,6 +103,14 @@ export const AppRoutes: React.FC = () => (
       element={
         <RequireAgeGate>
           <VoyagePage />
+        </RequireAgeGate>
+      }
+    />
+    <Route
+      path="/cosmos"
+      element={
+        <RequireAgeGate>
+          <PulpSpaceShell />
         </RequireAgeGate>
       }
     />

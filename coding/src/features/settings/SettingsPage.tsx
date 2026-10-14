@@ -256,6 +256,21 @@ export const SettingsPage: React.FC = () => {
                 <WhyOnNote settingKey="timerDisplay" defaultValue="bar" />
               </div>
 
+              <label className="flex items-start gap-3 min-h-[44px] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.cosmosLook}
+                  onChange={(e) => void saveWithConfirmation({ cosmosLook: e.target.checked })}
+                  className="w-5 h-5 mt-1"
+                />
+                <span>
+                  Cosmos look on every page (retro pulp-comic style)
+                  <span className="block text-xs text-muted">
+                    Uses its own paper-and-ink colors in place of the Theme and Dim colors while it is on. See it first on the Cosmos page.
+                  </span>
+                </span>
+              </label>
+
               <SensoryQuickSwitch />
 
               <WebsitePersonalizerPanel />
