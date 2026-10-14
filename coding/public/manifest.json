@@ -1,0 +1,8 @@
+{
+  "name": "ADHD1X — School Day Copilot",
+  "short_name": "ADHD1X",
+  "start_url": "/today",
+  "display": "standalone",
+  "background_color": "#0F1430",
+  "theme_color": "#1F5FBF"
+}
