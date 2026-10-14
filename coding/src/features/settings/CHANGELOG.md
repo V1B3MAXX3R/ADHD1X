@@ -3,6 +3,12 @@
 Part of ADHD1X. Files: SettingsPage.tsx
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-14 - New Term and breaks section
+- Made by: Claude
+- Changed: Settings now has a Term and breaks section (between Planning and Timer) holding the last day, term mode and breaks.
+- Why: Christian asked for the term's last day to show in regular mode and Catch Up, a midterms mode and a finals mode, breaks, and for the Aggressive pace to use Morning, Evening and Night blocks shaped by how many hours he is willing to work.
+- Notes: Each change saves when you make it and shows the usual 'Setting saved.' note.
+
 ## 2026-10-13 - Cosmos look switch
 - Made by: Claude
 - Changed: Display has a Cosmos look on every page checkbox.

@@ -22,6 +22,7 @@ import {
   saveAssignment,
   saveCalendarItems,
   saveCourse,
+  saveCoursesAndAssignments,
   saveFirstMove,
   saveQuizAnswer,
   saveSession,
@@ -69,6 +70,8 @@ interface AppContextValue {
   undoQuizSetting: (settingKey: keyof Settings, defaultValue: unknown) => Promise<void>;
   upsertCourse: (c: Course) => Promise<void>;
   upsertAssignment: (a: Assignment) => Promise<void>;
+  /** Saves many classes and assignments at once, with one update to the screen (for imports). */
+  upsertMany: (courses: Course[], assignments: Assignment[]) => Promise<void>;
   saveCalendarBatch: (items: CalendarItem[]) => Promise<void>;
   removeAllCalendarItems: () => Promise<void>;
   saveTodayPlanState: (day: StudyDay) => Promise<void>;
@@ -237,6 +240,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!storageBlocked) await saveAssignment(a);
   };
 
+  const upsertMany = async (newCourses: Course[], newAssignments: Assignment[]) => {
+    const courseIds = new Set(newCourses.map((c) => c.id));
+    const assignmentIds = new Set(newAssignments.map((a) => a.id));
+    if (newCourses.length > 0) setCourses((prev) => [...prev.filter((x) => !courseIds.has(x.id)), ...newCourses]);
+    if (newAssignments.length > 0) setAssignments((prev) => [...prev.filter((x) => !assignmentIds.has(x.id)), ...newAssignments]);
+    if (!storageBlocked) await saveCoursesAndAssignments(newCourses, newAssignments);
+  };
+
   // Marks an assignment finished. In Space style with Celebrations on, also shows the reward (A5, A24, A67).
   const completeAssignmentWithReward = async (assignment: Assignment) => {
     const updated: Assignment = { ...assignment, status: 'done', completedAt: new Date().toISOString() };
@@ -400,6 +411,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         undoQuizSetting,
         upsertCourse,
         upsertAssignment,
+        upsertMany,
         saveCalendarBatch,
         removeAllCalendarItems,
         saveTodayPlanState,

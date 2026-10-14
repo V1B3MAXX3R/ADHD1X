@@ -6,6 +6,7 @@ import { useClock } from '../../shared/clock/ClockContext';
 import { blockAt, describeNow, format12h, formatDueIn, minutesOfDay, toLocalIso, formatLocalTime } from '../../shared/clock/clockLogic';
 import { buildDayPlan, PlannedSessionItem } from './planEngine';
 import { CatchUpBar } from './CatchUpBar';
+import { TermBar } from '../planning/TermBar';
 import { LeftOffList } from '../memory/LeftOffList';
 import { StudyArchitectPanel } from '../gemini/StudyArchitectPanel';
 import { BlockName } from '../../shared/data/schemas';
@@ -109,6 +110,7 @@ export const TodayPage: React.FC = () => {
     return (
       <AppShell title={`Today, ${todayStr}`}>
         <div className="space-y-4">
+          <TermBar />
           <CatchUpBar />
           <LeftOffList />
           <div className="flex flex-wrap items-center justify-between gap-2 bg-surface p-4 rounded border border-border">
@@ -172,6 +174,7 @@ export const TodayPage: React.FC = () => {
   return (
     <AppShell title={`Today, ${todayStr}`}>
       <div className="space-y-6">
+        <TermBar />
         <CatchUpBar />
         <LeftOffList />
         <section aria-label="Right now" className="p-4 rounded border border-border bg-surface space-y-2">

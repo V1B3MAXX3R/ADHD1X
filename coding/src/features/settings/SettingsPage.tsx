@@ -18,11 +18,13 @@ import { SensoryQuickSwitch } from '../focus/SensoryQuickSwitch';
 import { RecoveryGapsManager } from '../planning/RecoveryGapsManager';
 import { SavedRoutinesManager } from '../routines/SavedRoutinesManager';
 import { FullQuizPanel } from '../quiz/FullQuizPanel';
+import { TermSettingsPanel } from '../planning/TermSettingsPanel';
 
 const SECTIONS = [
   ['display', 'Display'],
   ['notifications', 'Notifications'],
   ['planning', 'Planning'],
+  ['term', 'Term and breaks'],
   ['timer', 'Timer'],
   ['help-tone', 'Help and tone'],
   ['answers', 'My answers'],
@@ -379,6 +381,13 @@ export const SettingsPage: React.FC = () => {
               </label>
 
               <RecoveryGapsManager />
+            </>
+          )}
+
+          {section === 'term' && (
+            <>
+              <h2 className="text-lg font-bold">Term and breaks</h2>
+              <TermSettingsPanel />
             </>
           )}
 

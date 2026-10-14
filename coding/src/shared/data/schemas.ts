@@ -69,6 +69,31 @@ export const ChecklistItemSchema = z.object({
 });
 export type ChecklistItem = z.infer<typeof ChecklistItemSchema>;
 
+const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+export const AggressiveHoursSchema = z.object({
+  Morning: z.number().min(0).max(6).default(1.5),
+  Evening: z.number().min(0).max(6).default(1.5),
+  Night: z.number().min(0).max(6).default(1),
+});
+export type AggressiveHours = z.infer<typeof AggressiveHoursSchema>;
+
+export const TermModeSchema = z.enum(['regular', 'midterms', 'finals']);
+export type TermMode = z.infer<typeof TermModeSchema>;
+export const TermSchema = z.object({
+  lastDay: dateString.optional(),
+  mode: TermModeSchema.default('regular'),
+});
+export type Term = z.infer<typeof TermSchema>;
+
+export const SchoolBreakSchema = z.object({
+  id: z.string(),
+  label: z.string().min(1).max(60),
+  start: dateString,
+  end: dateString,
+});
+export type SchoolBreak = z.infer<typeof SchoolBreakSchema>;
+
 export const SettingsSchema = z.object({
   ageConfirmed18: z.boolean().default(false),
   geminiNoticeAcknowledged: z.boolean().default(false),
@@ -128,10 +153,25 @@ export const SettingsSchema = z.object({
       targetGrade: z.number().min(0).max(100).default(85),
       pace: z.enum(['aggressive', 'normal', 'chill']).default('normal'),
       selectedCourseId: z.string().default('all'),
+      // The classes combined in one plan. Empty means the older single choice above, or all classes.
+      selectedCourseIds: z.array(z.string()).default([]),
+      // The catch-up deadline: the nearest date a C is possible (auto), or a date you pick (manual).
+      deadlineMode: z.enum(['auto', 'manual']).default('auto'),
+      deadline: dateString.optional(),
+      // Late assignments you took out of the plan. Everything late is in the plan until you take it out.
+      lateSkippedIds: z.array(z.string()).max(3000).default([]),
+      // Work you already turned in that you chose to put back in the plan (to redo or resubmit).
+      planAddedIds: z.array(z.string()).max(3000).default([]),
+      // Hours the person is willing to work in each block on the Aggressive pace. Their total is the daily amount.
+      aggressiveHours: AggressiveHoursSchema.default({ Morning: 1.5, Evening: 1.5, Night: 1 }),
       quickCurrentPercent: z.number().min(0).max(100).optional(),
       quickRemainingWeight: z.number().min(0).max(100).optional(),
     })
     .default({ on: false, targetGrade: 85, pace: 'normal', selectedCourseId: 'all' }),
+  // The school term: its last day, and whether it is a regular stretch, midterms or finals.
+  term: TermSchema.default({ mode: 'regular' }),
+  // Days off (holidays, spring break). Catch Up plans no study on these days.
+  schoolBreaks: z.array(SchoolBreakSchema).max(20).default([]),
   manualOverrides: z.array(z.string()).default([]),
   exportPromptShown: z.boolean().default(false),
 });
@@ -144,12 +184,106 @@ export const QuizAnswerRecordSchema = z.object({
 });
 export type QuizAnswerRecord = z.infer<typeof QuizAnswerRecordSchema>;
 
+// What the Canvas tool brought in about an assignment. Read-only copies; editing them changes nothing in Canvas.
+export const CanvasAssignmentInfoSchema = z.object({
+  groupId: z.number().int().optional(),
+  lockAt: z.string().max(40).optional(), // after this, Canvas no longer takes the work
+  url: z.string().max(500).optional(), // https link back to the assignment, checked against the Canvas site on import
+  missing: z.boolean().optional(),
+  late: z.boolean().optional(),
+  submittedAt: z.string().max(40).optional(),
+  attempt: z.number().int().min(0).max(1000).optional(),
+  allowedAttempts: z.number().int().min(-1).max(1000).optional(),
+  redo: z.boolean().optional(),
+  pointsDeducted: z.number().min(0).max(1000).optional(),
+});
+export type CanvasAssignmentInfo = z.infer<typeof CanvasAssignmentInfoSchema>;
+
+export const CanvasGroupSchema = z.object({
+  id: z.number().int(),
+  name: z.string().max(120),
+  weight: z.number().min(0).max(1000),
+  dropLowest: z.number().int().min(0).max(100).default(0),
+  dropHighest: z.number().int().min(0).max(100).default(0),
+  neverDrop: z.array(z.number().int()).max(500).default([]),
+});
+export type CanvasGroup = z.infer<typeof CanvasGroupSchema>;
+
+// What the Canvas tool brought in about a class: how it is graded, plus the syllabus and recent announcements.
+// Grades stay on this device and are never sent to Gemini (A36).
+export const CanvasCourseInfoSchema = z.object({
+  courseId: z.number().int(),
+  fetchedAt: z.string().max(40),
+  currentScore: z.number().min(0).max(1000).nullable().optional(),
+  currentGrade: z.string().max(10).nullable().optional(),
+  finalScore: z.number().min(0).max(1000).nullable().optional(),
+  finalGrade: z.string().max(10).nullable().optional(),
+  weighted: z.boolean().default(false),
+  hideFinalGrades: z.boolean().optional(),
+  groups: z.array(CanvasGroupSchema).max(100).default([]),
+  gradingScale: z.array(z.object({ name: z.string().max(20), minPercent: z.number().min(0).max(100) })).max(40).optional(),
+  latePolicy: z
+    .object({
+      lateDeductionEnabled: z.boolean(),
+      lateDeductionPercent: z.number().min(0).max(100).nullable(),
+      lateInterval: z.string().max(10).nullable(),
+      lateMinimumEnabled: z.boolean(),
+      lateMinimumPercent: z.number().min(0).max(100).nullable(),
+      missingDeductionEnabled: z.boolean(),
+      missingDeductionPercent: z.number().min(0).max(100).nullable(),
+    })
+    .optional(),
+  moduleProgress: z.object({ completed: z.number().int().min(0), total: z.number().int().min(1) }).optional(),
+  syllabusText: z.string().max(20000).optional(),
+  announcements: z
+    .array(z.object({ id: z.number().int(), title: z.string().max(200), postedAt: z.string().max(40).nullable(), text: z.string().max(1500) }))
+    .max(15)
+    .default([]),
+  /** Parts Canvas did not share with students, by name. */
+  unavailable: z.array(z.string().max(40)).max(20).default([]),
+});
+export type CanvasCourseInfo = z.infer<typeof CanvasCourseInfoSchema>;
+
+const percent = z.number().min(0).max(100);
+
+// A category of work in your own grading setup (Homework 40%, say). Assignments join it by your choice, by its
+// Canvas category, or by a word in their name.
+export const GradeCategorySchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).max(60),
+  weight: z.number().min(0).max(1000),
+  /** Words that connect an assignment to this category when they appear in its name ("quiz", "lab"). */
+  keywords: z.array(z.string().min(1).max(40)).max(20).default([]),
+  canvasGroupId: z.number().int().optional(),
+  dropLowest: z.number().int().min(0).max(50).default(0),
+});
+export type GradeCategory = z.infer<typeof GradeCategorySchema>;
+
+// How a class is graded, entered by you. It replaces what Canvas says when both exist.
+export const CourseGradingSchema = z.object({
+  /** The lowest percent for each letter. */
+  cutoffs: z.object({ A: percent, B: percent, C: percent, D: percent }),
+  /** True when the class weights categories. False means it is graded by points. */
+  weighted: z.boolean().default(false),
+  categories: z.array(GradeCategorySchema).max(30).default([]),
+  /** Where an assignment goes when nothing else connects it. */
+  defaultCategoryId: z.string().optional(),
+});
+export type CourseGrading = z.infer<typeof CourseGradingSchema>;
+
 export const CourseSchema = z.object({
   id: z.string(),
   name: z.string().min(1).max(120),
   isMajor: z.boolean(),
   endDate: z.string().optional(),
   createdAt: z.string(),
+  // Percent taken off late work in this class. Missing or 0 means the late penalty is waived. 100 means late work is not accepted.
+  latePenaltyPercent: z.union([z.literal(0), z.literal(10), z.literal(50), z.literal(100)]).optional(),
+  canvas: CanvasCourseInfoSchema.optional(),
+  grading: CourseGradingSchema.optional(),
+  // Your grade now in this class, typed in by you. It replaces Canvas's number in the Catch Up math. Stays on this
+  // device, never sent to Gemini (A36).
+  gradeNowPercent: z.number().min(0).max(150).optional(),
 });
 export type Course = z.infer<typeof CourseSchema>;
 
@@ -174,6 +308,9 @@ export const AssignmentSchema = z.object({
   note: z.string().max(280).optional(), // "Where was I?" note (A62). Stays on this device, never sent to Gemini.
   source: z.enum(['syllabus', 'manual', 'calendar', 'canvas']),
   calendarId: z.string().optional(),
+  canvas: CanvasAssignmentInfoSchema.optional(),
+  /** The grading category you connected this to by hand. */
+  categoryId: z.string().max(60).optional(),
   createdAt: z.string(),
   completedAt: z.string().optional(),
 });

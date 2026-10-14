@@ -3,6 +3,12 @@
 Part of ADHD1X. Files: App.tsx, AppContext.tsx
 Every change to this part gets an entry here, and one line in the main [coding/CHANGELOG.md](../../CHANGELOG.md) (decision A17). Newest entries at the top.
 
+## 2026-10-14 - Save many classes and assignments at once
+- Made by: Claude
+- Changed: AppContext gained upsertMany(courses, assignments): one save and one screen update.
+- Why: Saving Christian's grades file one assignment at a time took about 26 seconds, with the screen redrawing after each one, and looked like it had lost data.
+- Notes: A 306-item file now saves in under half a second.
+
 ## 2026-10-13 - Route /cosmos
 - Made by: Claude
 - Changed: Added the /cosmos route (behind the age check).

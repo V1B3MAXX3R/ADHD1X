@@ -1,11 +1,12 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useApp } from '../../app/AppContext';
 import { GradesFile, MAX_GRADES_FILE_BYTES, parseGradesFile, planGradeImport } from './gradesFile';
+import { CURRENT_WORK_DAYS } from '../catchUp/dueBuckets';
 
 // Reads the file made by the Canvas grades tool (tools/canvas_grades). It shows what would change first, and
 // nothing is saved until Save (A4). The website never sees a Canvas login, and grades never go to Gemini (A36).
 export const GradesImportPanel: React.FC = () => {
-  const { courses, assignments, upsertCourse, upsertAssignment } = useApp();
+  const { courses, assignments, upsertMany } = useApp();
   const [file, setFile] = useState<GradesFile | null>(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -35,11 +36,22 @@ export const GradesImportPanel: React.FC = () => {
     }
     setError('');
     setFile(result.file);
-    // Courses with graded work start ticked. Old or empty courses start unticked, so they do not clutter your list.
+    // Courses with graded work, or with dated work from this term, start ticked. Old or empty courses (an old club,
+    // support pages with no due dates) start unticked, so they do not clutter your list.
     setChosen(
       new Set(
         result.file.courses
-          .filter((c) => c.assignments.some((a) => a.state === 'graded' && a.score !== null))
+          .filter((c) =>
+            c.assignments.some(
+              (a) =>
+                (a.state === 'graded' && a.score !== null) ||
+                (a.countsInFinalGrade &&
+                  a.state !== 'excused' &&
+                  (a.pointsPossible ?? 0) > 0 &&
+                  Boolean(a.dueAt) &&
+                  Date.now() - new Date(a.dueAt as string).getTime() < CURRENT_WORK_DAYS * 86_400_000),
+            ),
+          )
           .map((c) => c.canvasCourseId),
       ),
     );
@@ -54,19 +66,22 @@ export const GradesImportPanel: React.FC = () => {
     if (!file) return;
     setBusy(true);
     const real = planGradeImport(file, courses, assignments, { addMissing, courseIds: chosen }, () => crypto.randomUUID(), new Date());
-    for (const c of real.newCourses) await upsertCourse(c);
-    for (const a of real.updates) await upsertAssignment(a);
-    for (const a of real.additions) await upsertAssignment(a);
+    // One save for everything, so a big import is quick and the page updates once.
+    await upsertMany([...real.newCourses, ...real.courseUpdates], [...real.updates, ...real.additions]);
     setMessage(
       `Saved. Updated ${real.updates.length} assignment${real.updates.length === 1 ? '' : 's'}` +
-        (real.additions.length > 0 ? ` and added ${real.additions.length} graded one${real.additions.length === 1 ? '' : 's'}.` : '.') +
+        (real.additions.length > 0 ? ` and added ${real.additions.length} new one${real.additions.length === 1 ? '' : 's'}` : '') +
+        (real.courseUpdates.length + real.newCourses.length > 0
+          ? `, with Canvas details for ${real.courseUpdates.length + real.newCourses.length} class${real.courseUpdates.length + real.newCourses.length === 1 ? '' : 'es'}.`
+          : '.') +
         ' You can delete the file now.',
     );
     setBusy(false);
     reset();
   };
 
-  const changes = plan ? plan.updates.length + plan.additions.length : 0;
+  const changes = plan ? plan.updates.length + plan.additions.length + plan.courseUpdates.length + plan.newCourses.length : 0;
+  const richFile = Boolean(file && file.formatVersion >= 2);
 
   return (
     <section aria-labelledby="grades-import-heading" className="p-5 rounded-lg border border-border bg-surface space-y-4">
@@ -101,6 +116,14 @@ export const GradesImportPanel: React.FC = () => {
           </li>
           <li>Afterwards, delete the file, and delete the token in Canvas.</li>
         </ol>
+        <p className="pt-2">
+          The tool reads only your own things, and only reads: your grades and assignments (with your own due dates,
+          lock dates, instructions and rubrics), how each class is graded (category weights, drop rules, letter scale,
+          late policy), the syllabus, module progress, and announcements from the last 30 days. It never reads your
+          inbox, other students&apos; work or posts, files, quiz questions or answers, feedback comments, or your profile.
+          Add <code className="px-1 rounded bg-bg border border-border">--grades-only</code> to leave out the syllabus,
+          announcements, instructions and rubrics.
+        </p>
         <p className="text-muted pt-2">
           Never type your token into this website or share it in chat. The tool&apos;s README has the details and the
           safety rules it follows.
@@ -174,10 +197,10 @@ export const GradesImportPanel: React.FC = () => {
               className="mt-1 w-5 h-5"
             />
             <span>
-              <span className="font-medium">Also add graded work that is not in my assignments yet</span>
+              <span className="font-medium">Also add Canvas work that is not in my assignments yet</span>
               <span className="block text-muted">
-                It is added as finished, and the course is created if you do not have it. Without these, the grade math
-                leaves out past work. They count toward your Progress too.
+                Graded work is added as finished. Work not graded yet, including missing work, is added as to do so Catch
+                Up can plan it. The course is created if you do not have it. Without these, the grade math leaves work out.
               </span>
             </span>
           </label>
@@ -187,16 +210,45 @@ export const GradesImportPanel: React.FC = () => {
               Points and scores filled in on {plan.updates.length} assignment{plan.updates.length === 1 ? '' : 's'} you
               already have
             </li>
-            {plan.additions.length > 0 && (
+            {plan.additions.filter((a) => a.status === 'done').length > 0 && (
+              <li>{plan.additions.filter((a) => a.status === 'done').length} graded assignments will be added as finished</li>
+            )}
+            {plan.additions.filter((a) => a.status !== 'done').length > 0 && (
               <li>
-                {plan.additions.length} graded assignment{plan.additions.length === 1 ? '' : 's'} will be added
+                {plan.additions.filter((a) => a.status !== 'done').length} not graded yet (including missing work) will be
+                added as to do
               </li>
             )}
             {plan.newCourses.length > 0 && <li>New courses: {plan.newCourses.map((c) => c.name).join(', ')}</li>}
+            {richFile && plan.courseUpdates.length + plan.newCourses.length > 0 && (
+              <li>
+                How {plan.courseUpdates.length + plan.newCourses.length} class
+                {plan.courseUpdates.length + plan.newCourses.length === 1 ? ' is' : 'es are'} graded in Canvas (weights, drop
+                rules, letter scale, late policy), plus the syllabus and recent announcements where Canvas shares them
+              </li>
+            )}
+            {plan.markedDone > 0 && (
+              <li>
+                {plan.markedDone} unfinished assignment{plan.markedDone === 1 ? '' : 's'} marked finished, because Canvas
+                shows {plan.markedDone === 1 ? 'it' : 'them'} turned in
+              </li>
+            )}
+            {plan.detailsFilled > 0 && (
+              <li>
+                Instructions from Canvas filled in on {plan.detailsFilled} assignment{plan.detailsFilled === 1 ? '' : 's'}{' '}
+                that had none (yours are never replaced)
+              </li>
+            )}
+            {plan.datesChanged > 0 && (
+              <li>
+                {plan.datesChanged} due date{plan.datesChanged === 1 ? '' : 's'} moved to match Canvas (an extension, for
+                example)
+              </li>
+            )}
             {plan.unchanged > 0 && <li>{plan.unchanged} already up to date</li>}
             {plan.unmatchedGraded > 0 && <li>{plan.unmatchedGraded} graded but not added, because the box above is off</li>}
             {plan.notGradedYet > 0 && (
-              <li>{plan.notGradedYet} not graded yet and not in your list. Import your calendar to bring those in.</li>
+              <li>{plan.notGradedYet} not graded yet and not added (the box above is off, or Canvas has no due date for them)</li>
             )}
             {plan.skipped > 0 && <li>{plan.skipped} skipped (excused, not counted in the grade, or no points)</li>}
           </ul>

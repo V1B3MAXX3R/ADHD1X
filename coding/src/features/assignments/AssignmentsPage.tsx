@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { describeCanvasAssignment, safeLink } from '../grades/canvasText';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
@@ -79,7 +80,20 @@ export const AssignmentsPage: React.FC = () => {
           Due: {a.dueDate} {a.dueTime ?? ''} • Points: {a.points ?? 'n/a'} • Grade %:{' '}
           {a.percentOfGrade ?? 'n/a'}%
         </p>
-        <p>Instructions: {a.detailsText || 'No additional instructions entered.'}</p>
+        {a.canvas && (
+          <p>
+            From Canvas: {describeCanvasAssignment(a, new Date()).join(' • ') || 'no notes'}
+            {safeLink(a.canvas.url) && (
+              <>
+                {' '}
+                <a href={safeLink(a.canvas.url)!.href} rel="noopener noreferrer" className="underline font-medium">
+                  Open in Canvas ({safeLink(a.canvas.url)!.host})
+                </a>
+              </>
+            )}
+          </p>
+        )}
+        <p className="whitespace-pre-wrap">Instructions: {a.detailsText || 'No additional instructions entered.'}</p>
         <LeftOffNote assignmentId={a.id} editable />
         {a.type === 'reading' && <ReadingTimeCalculator assignment={a} />}
         <PersonalPaceNote assignment={a} />

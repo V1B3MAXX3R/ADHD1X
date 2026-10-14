@@ -35,6 +35,84 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | Gemini rules and safety (server) | [server/](server/CHANGELOG.md) |
 | Gemini endpoint (API) | [api/](api/CHANGELOG.md) |
 
+## 2026-10-14 - Catch Up: each class on its own, and paces set up from the due dates
+- Made by: Claude
+- Changed: Each class's grade now (Canvas's, or one you type under Grading) is where its C math starts, and it shows in Your classes, Grading and the C box. What each class needs for a C now comes before the pace, one short block per class, with no combined total. Past-due work is planned one class at a time, the class closest to caught up first, and a class whose C is out of reach only gets the time left over. The paces are set up from the due dates, the last day of the term (or your goal date) and breaks: Chill goes up to 2 hours and Normal to 3.5 when needed, Aggressive keeps your hours, and the chosen pace says when each class is caught up. The goal date is now inside Your pace, and the study plan can show one class at a time. Touched: catchUp, shared, today, tests.
+- Why: Christian saw about 200 for a C across all his classes and asked for the focus to be on each class (each needs a C or above), for each class's grade to be part of the settings and to shape the planner and the pace, and for the pace not to treat all the work as one big class. He also asked to keep the screen uncluttered, to put the pace after the assignment reasoning, and for the pace to set up its modes from due dates, time, the end of the semester and other factors.
+- Notes: 344 unit, 15 browser and 61 Python tests pass. Nothing was committed or pushed. On his real Canvas file (every class, last day December 12) the least time that keeps every class on track is 4.5 hours a day; at Normal (3.5 hours) two of the five classes would not be caught up by the last day, and the page names them.
+
+## 2026-10-14 - Catch Up: due dates first, and grading for each class
+- Made by: Claude
+- Changed: Catch Up works out each class's C first, then plans those tasks by their own due dates (work due soon stays on time, past-due work fills the rest, upcoming work starts in the week before it is due), and only then lets the pace set the hours. New sections: Grading for each class (letter cutoffs, points or weighted categories, drop rules, connecting assignments by hand) and By due date (every unfinished assignment grouped by its due date, with whether it is needed for a C and when it is planned). Work from earlier terms is left out, a grades file saves in one quick step, and the grade on graded work counts 0s the way Canvas does. Touched: catchUp, grades, app, shared, today.
+- Why: Christian found that ticking several classes bundled all the work into one heap before one due date (Catch Up said everything was due by December 12). He asked for work to be sorted by due date before the pace comes in, for Catch Up to know a C does not need every assignment (read the points), and for a grading-standard setting for each class that he can type in, connecting assignments by hand if needed.
+- Notes: The engine tests for this are in the entry above. Nothing was committed or pushed.
+
+## 2026-10-14 - Canvas tool: easier cookie pasting and clearer messages
+- Made by: Claude
+- Changed: The tool takes the cookie in every form a browser gives it, says exactly why a paste was refused, shows how many characters it received, and no longer lets a refused extra stop the grades. Touched: tools/canvas_grades, tests.
+- Why: Christian could not get the tool to take his browser cookie. It stopped with 'That does not look like a valid token or cookie value', which did not say what was wrong, and it stopped before contacting Canvas.
+- Notes: 316 unit, 15 browser and 61 Python tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Canvas tool version 2, and grades that match Canvas
+- Made by: Claude
+- Changed: The Canvas tool now reads everything safe that the app uses (weights, drop rules, letter scale, late policy, lock dates, missing and late flags, instructions, rubrics, syllabus, announcements, links). Catch Up works grades out the way Canvas does and shows Canvas's grade beside its own. Fixed a wrong sentence in Enough for a C. Touched: tools/canvas_grades, grades, catchUp, assignments, shared, tests.
+- Why: Christian asked the Canvas tool to pull everything it safely can. Before this, the tool read only scores, so Catch Up could not match Canvas for weighted classes (ITIS-55 showed 28% in Canvas but 14% on points) and could not tell a missing 0 from a real one.
+- Notes: 316 unit, 15 browser and 49 Python tests pass. Nothing was committed or pushed. Run the tool again and re-import to get the new details.
+
+## 2026-10-14 - Catch Up: no two-week fallback
+- Made by: Claude
+- Changed: When no pace can reach a C, Catch Up no longer shows a two-week date; it covers the rest of the term and says how many hours a day a C would take, with a button to set Aggressive to that. Touched: catchUp, tests.
+- Why: Christian chose the automatic goal date and saw October 28, a date he could not reach. When no pace could reach a C, the page had quietly fallen back to the next two weeks and shown that as the date. He had asked for the two-week deadline to be removed.
+- Notes: 280 unit and 14 browser tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Catch Up: every assignment in the dropdown, a realistic C, fuller Canvas import
+- Made by: Claude
+- Changed: The dropdown lists every assignment. A C needing up to 90% on the work left counts as possible. The grades import adds work not graded yet (including missing) and sizes time guesses by points. Touched: catchUp, grades, shared, tests.
+- Why: Christian asked for the late work dropdown to list every assignment, read from his assignments, and said Catch Up still told him he could not get a C. A local run on his Canvas file showed three causes: a C needing 70.6% was called impossible because the assumed score was 70%, Canvas work not graded yet (including missing work) was never imported, and every imported item got a full default time (a 1-point lab counted as 3 hours).
+- Notes: 278 unit and 14 browser tests pass. Nothing was committed or pushed. Re-import the Canvas file to see the change.
+
+## 2026-10-14 - Catch Up: one shared model, 0s as late work, paces checked against the goal date
+- Made by: Claude
+- Changed: All Catch Up sections and the Today bar read one model. A past-due 0 counts as late work. A pace that cannot reach a C by the goal date cannot be picked, and the page offers a faster pace or a later date. Touched: catchUp, today, tests.
+- Why: Christian found that 0s in his gradebook were not treated as late work, and that the paces and the Enough for a C box did not follow the goal date (for example, Chill was still offered for a goal date it could not meet). He asked for every part to work together and read from each other.
+- Notes: 269 unit and 14 browser tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Catch Up: personal deadline and Late work section
+- Made by: Claude
+- Changed: Catch Up has a deadline you pick or the site finds (nearest date for a C), and a Late work section with four choices per class and a list of late assignments to include. Touched: catchUp, shared, tests.
+- Why: Christian asked for a personal catch-up deadline (a date he picks, or the nearest date the site finds that he can reach a C) in place of the fixed two weeks, and for late work to have its own section with four choices per class and a list of late assignments to pick from.
+- Notes: 260 unit and 14 browser tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Catch Up: fairer C goal and clearer answers when a C is hard
+- Made by: Claude
+- Changed: The C goal no longer lets missing-work zeros lower the assumed score, and says how high a score a C needs, or the best possible, instead of 'not enough'. Touched: catchUp, tests.
+- Why: Christian pasted four classes where the C goal said the work left was not enough to reach it 'at about 50%' and told him nothing useful.
+- Notes: 246 unit and 14 browser tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Catch Up: C goal ignores work for the rest of the term
+- Made by: Claude
+- Changed: Catch Up plans and the C goal use work due already or in the next 14 days, class by class. Touched: catchUp, today, tests.
+- Why: Christian asked Catch Up not to factor in every assignment for the rest of the school year, and to work out what a C takes for each class.
+- Notes: 243 unit and 14 browser tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Catch Up: matching pace cards, better-pace advice, enough for a C
+- Made by: Claude
+- Changed: Pace cards and the plan now agree. Catch Up suggests a faster pace only when assignments are at risk, shows how long a C takes at each pace, and the Aggressive pace plans just enough work for a C. Touched: catchUp, tests.
+- Why: Christian saw the pace cards and the study plan disagree (188 days against a plan cut off at 120, and 1.25 hours shown as 1.3), and asked for advice on a better pace when assignments are at risk, and for Aggressive to plan just enough work for a C and say how long that takes.
+- Notes: 243 unit tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Term last day, midterms and finals modes, breaks, Aggressive blocks
+- Made by: Claude
+- Changed: Settings has a new Term and breaks section. Today and Catch Up show the term's last day. Catch Up skips break days, plans exams first in midterms and finals modes, and the Aggressive pace is cut into Morning, Evening and Night using hours you choose. Touched: catchUp, planning, settings, today, shared, tests.
+- Why: Christian asked for the term's last day to show in regular mode and Catch Up, a midterms mode and a finals mode, breaks, and for the Aggressive pace to use Morning, Evening and Night blocks shaped by how many hours he is willing to work.
+- Notes: 226 unit tests pass. Nothing was committed or pushed.
+
+## 2026-10-14 - Catch Up: several classes, late penalties, what-ifs
+- Made by: Claude
+- Changed: Catch Up can plan several classes together with one study plan, apply a per-class late penalty (waived, 10% or 50%) to the grade math, and try what-if scores that can be reset without touching saved grades. Touched: catchUp, shared, tests.
+- Why: Christian asked for Catch Up to have a late penalty option per class (waived, 10%, 50%), a reset button for mock grade changes, and the ability to combine several classes into one plan and study plan.
+- Notes: 205 unit, 12 browser and 34 Python tests pass. Nothing was committed or pushed.
+
 ## 2026-10-14 - Security hardening
 - Made by: Claude
 - Changed: Access-code guess limits and checks on the Gemini endpoint; stronger headers in vercel.json (HSTS, no framing, same-origin policies, form-action); vite preview serves the same headers and the dev server is explicitly localhost-only; removed @vercel/node (types only) and upgraded react-router-dom to 7 (production dependencies now audit at 0 issues, all dependencies 26 down to 15); added SECURITY.md, security tests and npm run check:audit. Touched: api, server, shared, tests, config.

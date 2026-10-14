@@ -1,18 +1,41 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
 import { useClock } from '../../shared/clock/ClockContext';
-import { computeCatchUpPaces, PACE_MINUTES_PER_DAY } from '../catchUp/catchUp';
+import { PACE_MINUTES_PER_DAY } from '../catchUp/catchUp';
+import { buildCatchUpModel } from '../catchUp/catchUpModel';
+import { planDayLabel } from '../catchUp/studyPlan';
 import { useCatchUp } from '../catchUp/useCatchUp';
 
 // Shown on Today only after the person switched Catch Up on themselves. It is never an invitation (A39).
+// It reads the same Catch Up model as the Catch Up page, so the two always agree.
 export const CatchUpBar: React.FC = () => {
-  const { assignments } = useApp();
-  const { today } = useClock();
+  const { assignments, courses, settings } = useApp();
+  const { today, now } = useClock();
   const { catchUp, isSpace, modeName } = useCatchUp();
-  if (!catchUp.on) return null;
+  const model = useMemo(
+    () => (catchUp.on ? buildCatchUpModel({ assignments, courses, settings, today, now }) : null),
+    [catchUp.on, assignments, courses, settings, today, now],
+  );
+  if (!catchUp.on || !model) return null;
 
-  const days = computeCatchUpPaces(assignments, { today }).daysByPace[catchUp.pace];
+  const pace = model.paces[catchUp.pace];
+  const behind = pace.classes.filter((k) => !k.onTrack && !model.outOfReachIds.has(k.courseId)).length;
+  let line: React.ReactNode;
+  if (model.goal.nothingNeeded) line = 'On the points so far every ticked class is at a C. You can switch Catch Up off.';
+  else if (!pace.possible && model.needed.count > 0)
+    line = `At this pace, ${behind} ${behind === 1 ? 'class is' : 'classes are'} not on track for a C. Open Catch Up to change the pace or the goal.`;
+  else if (pace.cPlan.days.length === 0) line = 'There is nothing to plan right now.';
+  else if (!pace.caughtUpDate) line = 'Nothing needed for a C is past due. Start with the first task below for 2 minutes.';
+  else if (pace.caughtUpDate === today)
+    line = 'Start with the first task below for 2 minutes. At this pace every class is caught up today.';
+  else
+    line = (
+      <>
+        Start with the first task below for 2 minutes. At this pace every class is caught up by{' '}
+        <strong>{planDayLabel(pace.caughtUpDate, today)}</strong>.
+      </>
+    );
 
   return (
     <section
@@ -22,15 +45,9 @@ export const CatchUpBar: React.FC = () => {
       <div>
         <span className="font-bold">
           {isSpace && <span aria-hidden="true">⚡ </span>}
-          {modeName} is on ({PACE_MINUTES_PER_DAY[catchUp.pace].label} pace, target {catchUp.targetGrade}%)
+          {modeName} is on ({PACE_MINUTES_PER_DAY[catchUp.pace].label} pace)
         </span>
-        <p className="text-xs text-muted mt-1">
-          Start with the first task below for 2 minutes. At this pace, catching up takes about{' '}
-          <strong>
-            {days} {days === 1 ? 'day' : 'days'}
-          </strong>
-          . Work from earlier dates that you can still turn in is included.
-        </p>
+        <p className="text-xs text-muted mt-1">{line}</p>
       </div>
       <Link
         to="/catch-up"

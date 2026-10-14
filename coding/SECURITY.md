@@ -13,6 +13,7 @@ that way and keeping a few secrets out of the wrong places.
 | What Gemini returns | Shown as plain text | Checked against a strict shape, scanned for medical advice, and never run as code. |
 | Canvas login (token or cookie) | Your head, then a hidden prompt | The Python tool never saves, prints or sends it anywhere but the one Canvas address. See `tools/canvas_grades/README.md`. |
 | Your grades file | Your Downloads folder | The tool refuses to save inside the project. `.gitignore` blocks it. Delete it after importing. |
+| Canvas text and links in the file | Saved with your classes on this device | Turned into plain text by the tool and shown only as plain text. Links are kept only when https on the same Canvas site, checked again before showing, and open in the same tab. The tool never reads your inbox, other students' work, files, quiz content, comments or profile. |
 | The website itself | Headers in `vercel.json` | A strict Content Security Policy (no inline scripts or styles, no outside sites), HTTPS only (HSTS), no framing, no sniffing, no referrer, no camera, mic or location. `npm run build` then `npm run preview` serves the same headers locally. |
 
 Tests that guard this: `tests/unit/security.test.ts` (headers, ignored files, no dangerous code patterns, no outside

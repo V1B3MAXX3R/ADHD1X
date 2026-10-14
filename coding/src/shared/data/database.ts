@@ -80,6 +80,17 @@ export async function saveCourse(course: Course): Promise<void> {
   await db.put('courses', course);
 }
 
+// Saves many classes and assignments in one go (one transaction), for imports.
+export async function saveCoursesAndAssignments(courses: Course[], assignments: Assignment[]): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction(['courses', 'assignments'], 'readwrite');
+  const courseStore = tx.objectStore('courses');
+  const assignmentStore = tx.objectStore('assignments');
+  for (const c of courses) await courseStore.put(c);
+  for (const a of assignments) await assignmentStore.put(a);
+  await tx.done;
+}
+
 export async function deleteCourse(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('courses', id);
