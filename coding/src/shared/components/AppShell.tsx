@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useApp } from '../app/AppContext';
-import { getWhyOnNote } from '../logic/quizRules';
+import { useApp } from '../../app/AppContext';
+import { getWhyOnNote } from '../../features/quiz/quizRules';
 import { Settings } from '../data/schemas';
 
 export const WhyOnNote: React.FC<{

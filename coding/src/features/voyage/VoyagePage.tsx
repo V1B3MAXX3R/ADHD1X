@@ -1,7 +1,7 @@
 import React from 'react';
-import { AppShell } from '../../components/AppShell';
+import { AppShell } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
-import { computeVoyageStatus, VOYAGE_STOPS } from '../../logic/voyage';
+import { computeVoyageStatus, VOYAGE_STOPS } from './voyage';
 
 export const VoyagePage: React.FC = () => {
   const { settings, assignments, updateSettings } = useApp();

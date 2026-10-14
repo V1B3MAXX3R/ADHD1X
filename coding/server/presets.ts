@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AssignmentTypeSchema } from '../src/data/schemas';
+import { AssignmentTypeSchema } from '../src/shared/data/schemas';
 
 export const SHARED_SYSTEM_INSTRUCTION = `
 1. You only do the one school-planning job named. You have no tools, no browsing, no memory.

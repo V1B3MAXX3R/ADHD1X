@@ -7,15 +7,15 @@
 |---|---|
 | `research/` | Raw data, technical benchmarks, academic and conceptual findings |
 | `instructions/` | Prompts, system rules, functional requirements, prompt history (this file lives here) |
-| `coding/` | Source code, unit tests, architecture files. Empty and locked until Phase 6 |
+| `coding/` | Source code, unit tests, architecture files. Phase 6 MVP built 2026-10-13 (one folder per part, each with its own CHANGELOG.md) |
 | `artifacts/` | Final generated assets, config files, documentation maps |
 
 
 One space per phase. Each phase has its own file here, its own deliverable, and a gate that only Christian can open.
 
 ```
-[1 Research] --gate--> [2 Concept] --gate--> [3 UX] --gate--> [4 AI + Tech] --gate--> [5 Blueprint] --exact phrase--> [6 Build: LOCKED]
-                                                                                      ^ you are here
+[1 Research] --gate--> [2 Concept] --gate--> [3 UX] --gate--> [4 AI + Tech] --gate--> [5 Blueprint] --exact phrase--> [6 Build: MVP built]
+                                                                                                                  ^ you are here
 ```
 
 | Phase | File | Deliverable | Gate to move on |

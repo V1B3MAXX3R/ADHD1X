@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AppShell } from '../../components/AppShell';
+import { AppShell } from '../../shared/components/AppShell';
 import { useApp, getCurrentBlockName } from '../../app/AppContext';
-import { getTemplateFirstMove, BUILT_IN_TIPS } from '../../logic/templates';
-import { callFirstMovePreset, getCalmErrorMessage, AiFailureReason } from '../../ai/client';
+import { getTemplateFirstMove, BUILT_IN_TIPS } from './templates';
+import { callFirstMovePreset, getCalmErrorMessage, AiFailureReason } from '../../shared/ai/client';
 
 export const HelpMeStartPage: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId: string }>();

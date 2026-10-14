@@ -1,4 +1,4 @@
-import { AssignmentType } from '../data/schemas';
+import { AssignmentType } from '../../shared/data/schemas';
 
 export const TEMPLATE_FIRST_MOVES: Record<
   AssignmentType,

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppShell } from '../../components/AppShell';
+import { AppShell } from '../../shared/components/AppShell';
 import { useApp, getTodayDateString } from '../../app/AppContext';
-import { AssignmentType, AssignmentTypeSchema } from '../../data/schemas';
-import { getDefaultEstimate } from '../../logic/estimates';
-import { callSyllabusPreset, getCalmErrorMessage, AiFailureReason } from '../../ai/client';
+import { AssignmentType, AssignmentTypeSchema } from '../../shared/data/schemas';
+import { getDefaultEstimate } from '../../shared/logic/estimates';
+import { callSyllabusPreset, getCalmErrorMessage, AiFailureReason } from '../../shared/ai/client';
 
 interface DraftSyllabusRow {
   tempId: string;

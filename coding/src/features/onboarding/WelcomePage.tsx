@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppShell } from '../../components/AppShell';
+import { AppShell } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
-import { QUIZ_QUESTIONS } from '../../logic/quizRules';
+import { QUIZ_QUESTIONS } from '../quiz/quizRules';
 
 export const DISCLAIMER_TEXT_A21 =
   "Before we start. This short quiz is optional: skip it now and change your answers anytime. Your answers only change how ADHD1X looks and works for you, like layout, reminders, and how tasks get broken down. This isn't a test or a diagnosis, and nothing here is medical or mental health advice. ADHD1X is a planning tool to help you organize things your way. If you need medical or mental health support, please reach out to a qualified professional. The one required step is confirming you're 18 or older.";

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { AppShell, WhyOnNote } from '../../components/AppShell';
+import { AppShell, WhyOnNote } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
 import {
   deleteAllData,
@@ -9,8 +9,8 @@ import {
   importReplaceData,
   saveAccessCode,
   validateImportFile,
-} from '../../data/database';
-import { ExportFile } from '../../data/schemas';
+} from '../../shared/data/database';
+import { ExportFile } from '../../shared/data/schemas';
 import { DISCLAIMER_TEXT_A21 } from '../onboarding/WelcomePage';
 
 const SECTIONS = [

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AppShell } from '../../components/AppShell';
+import { AppShell } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
-import { Assignment } from '../../data/schemas';
+import { Assignment } from '../../shared/data/schemas';
 
 export const AssignmentsPage: React.FC = () => {
   const { id: routeAssignmentId } = useParams<{ id?: string }>();

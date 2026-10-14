@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AppShell } from '../../components/AppShell';
-import { BUILT_IN_TIPS } from '../../logic/templates';
+import { AppShell } from '../../shared/components/AppShell';
+import { BUILT_IN_TIPS } from '../helpMeStart/templates';
 
 export const HelpOverviewPage: React.FC = () => (
   <AppShell title="How ADHD1X works & Tips">

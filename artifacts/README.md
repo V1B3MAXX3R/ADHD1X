@@ -20,5 +20,5 @@ Final generated assets, configuration files, and this map of where everything li
 | Idea scan: similar apps | [../research/idea-scan.md](../research/idea-scan.md) |
 | Research index | [../research/README.md](../research/README.md) |
 | Version label (current 1.1.1) | [VERSION.md](VERSION.md) |
-| Code | [../coding/](../coding/) (locked) |
+| Code | [../coding/](../coding/) (MVP built; see its README) |
 | Coding changelog | [../coding/CHANGELOG.md](../coding/CHANGELOG.md) |

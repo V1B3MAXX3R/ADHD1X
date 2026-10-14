@@ -16,7 +16,7 @@ Everything in the project as of Phase 3 complete and Phase 4 not started:
 | Phase 1 research report (published) | https://claude.ai/code/artifact/be0199da-9277-4620-92b6-cfc034293509 |
 | ADHD and Autism evidence report (published) | https://claude.ai/code/artifact/93d76cd1-8565-4d79-8d36-42327f50c6a5 |
 
-No code exists yet (coding/ is locked until Phase 6, A2), so there is no software version. The code changelog stays [../coding/CHANGELOG.md](../coding/CHANGELOG.md) (A17).
+The Phase 6 MVP code was built on 2026-10-13 in [../coding/](../coding/), but the app is not deployed yet, so there is no software version (A113). The code changelog stays [../coding/CHANGELOG.md](../coding/CHANGELOG.md) (A17).
 
 ## Rules for the next version
 

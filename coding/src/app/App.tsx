@@ -10,7 +10,7 @@ import { AssignmentsPage } from '../features/assignments/AssignmentsPage';
 import { VoyagePage } from '../features/voyage/VoyagePage';
 import { SettingsPage } from '../features/settings/SettingsPage';
 import { CampusSupportPage, HelpOverviewPage } from '../features/help/HelpPages';
-import { AppShell } from '../components/AppShell';
+import { AppShell } from '../shared/components/AppShell';
 
 const RequireAgeGate: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { ready, settings } = useApp();

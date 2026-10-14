@@ -2,7 +2,7 @@
 
 **Version 1.1.1** (2026-10-10)
 
-Status: **proposals approved by Christian 2026-10-11 (A115, A116).** Waiting on Christian's two open answers (test devices, quiz skip defaults) and the exact phrase in A2. Planning only. No code exists, and none is written until Christian says the exact phrase in A2: "I approve the final blueprint. Begin implementation."
+Status: **proposals approved by Christian 2026-10-11 (A115, A116).** This blueprint was used to build the MVP in [../coding/](../coding/) (2026-10-13). Two answers were still open when it was written (test devices, quiz skip defaults).
 
 The blueprint has four parts:
 
@@ -364,6 +364,6 @@ T70 to T79 below were approved on 2026-10-11 (A115); the table keeps them for re
 
 ---
 
-## 13. Carries forward to Phase 6 (locked)
+## 13. Carries forward to Phase 6
 
 Phase 6 starts only when Christian says the exact phrase in A2. It will follow the prompts in order, M0 to M10, with the rules in the coder rules file. Nothing in `coding/` changes before then.

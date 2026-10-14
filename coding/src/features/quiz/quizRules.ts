@@ -1,4 +1,4 @@
-import { QuizAnswerRecord, Settings } from '../data/schemas';
+import { QuizAnswerRecord, Settings } from '../../shared/data/schemas';
 
 export interface QuizQuestionSpec {
   id: number;

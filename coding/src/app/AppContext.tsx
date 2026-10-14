@@ -7,7 +7,7 @@ import {
   Settings,
   SettingsSchema,
   StudyDay,
-} from '../data/schemas';
+} from '../shared/data/schemas';
 import {
   getAssignments,
   getCourses,
@@ -21,8 +21,8 @@ import {
   saveQuizAnswer,
   saveSettings,
   saveStudyDay,
-} from '../data/database';
-import { applyQuizAnswersToSettings } from '../logic/quizRules';
+} from '../shared/data/database';
+import { applyQuizAnswersToSettings } from '../features/quiz/quizRules';
 
 interface TimerState {
   running: boolean;

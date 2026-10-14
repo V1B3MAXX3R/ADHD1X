@@ -1,4 +1,4 @@
-import { Assignment, AssignmentType } from '../data/schemas';
+import { Assignment, AssignmentType } from '../../shared/data/schemas';
 
 export const VOYAGE_POINTS_BY_TYPE: Record<AssignmentType, number> = {
   discussion: 1,

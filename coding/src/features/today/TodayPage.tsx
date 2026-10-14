@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AppShell } from '../../components/AppShell';
+import { AppShell } from '../../shared/components/AppShell';
 import { useApp, getTodayDateString } from '../../app/AppContext';
-import { buildDayPlan, PlannedSessionItem } from '../../logic/planEngine';
-import { BlockName } from '../../data/schemas';
+import { buildDayPlan, PlannedSessionItem } from './planEngine';
+import { BlockName } from '../../shared/data/schemas';
 
 export const TodayPage: React.FC = () => {
   const {

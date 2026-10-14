@@ -1,5 +1,5 @@
-import { Assignment, BlockName, BlockWindows, Course, ManualMove } from '../data/schemas';
-import { getSizeClass, SizeClass } from './estimates';
+import { Assignment, BlockName, BlockWindows, Course, ManualMove } from '../../shared/data/schemas';
+import { getSizeClass, SizeClass } from '../../shared/logic/estimates';
 
 export const PLAN_CONSTANTS = {
   CAPACITY_RATIO: 0.85,
