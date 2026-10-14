@@ -1,8 +1,8 @@
 import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
-import { SettingsSchema } from '../../src/shared/data/schemas';
-import { applyQuizAnswersToSettings } from '../../src/features/quiz/quizRules';
-import { computeVoyageStatus } from '../../src/features/voyage/voyage';
+import { SettingsSchema } from '../../src/data/schemas';
+import { applyQuizAnswersToSettings } from '../../src/logic/quizRules';
+import { computeVoyageStatus } from '../../src/logic/voyage';
 import {
   deleteAllData,
   exportAllData,
@@ -12,7 +12,7 @@ import {
   saveAccessCode,
   saveCourse,
   validateImportFile,
-} from '../../src/shared/data/database';
+} from '../../src/data/database';
 
 describe('Quiz Rule Table & Skip Defaults (A85, A117, FR-02)', () => {
   it('Treats skipped questions as No, keeping dayPlanHome false when Q1 is skipped', () => {

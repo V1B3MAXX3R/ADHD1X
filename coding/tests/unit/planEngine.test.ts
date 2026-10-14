@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildDayPlan, PlanEngineInput } from '../../src/features/today/planEngine';
-import { Assignment, BlockWindows, Course } from '../../src/shared/data/schemas';
+import { buildDayPlan, PlanEngineInput } from '../../src/logic/planEngine';
+import { Assignment, BlockWindows, Course } from '../../src/data/schemas';
 
 const DEFAULT_WINDOWS: BlockWindows = {
-  Morning: { start: '07:00', end: '12:00' },
+  Morning: { start: '06:00', end: '12:00' },
   Evening: { start: '12:00', end: '17:00' },
   Night: { start: '17:00', end: '20:00' },
 };

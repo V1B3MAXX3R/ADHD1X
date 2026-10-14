@@ -4,7 +4,7 @@
 
 Status: **proposals approved by Christian 2026-10-11 (A115, A116).** Waiting on Christian's two open answers (test devices, quiz skip defaults) and the exact phrase in A2. Planning only. When Phase 6 opens, the text between the two lines below becomes `coding/RULES.md`. Three tiny pointer files then tell each AI tool to read it: `coding/CLAUDE.md` (for Claude), `coding/AGENTS.md` (for Codex) and `coding/GEMINI.md` (for Gemini). I believe those are the file names each tool looks for; check the tools' current docs when setting up (P01). One rules file means the three coders follow the same conventions (A16).
 
-Coding was locked until Christian said the exact phrase in A2; `coding/` now holds the built MVP (one folder per part, each with its own CHANGELOG.md).
+Until Christian says the exact phrase in A2, `coding/` stays empty and locked.
 
 ---
 

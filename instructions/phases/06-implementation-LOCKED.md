@@ -1,8 +1,8 @@
-# Phase 6: Implementation (file name keeps "LOCKED" so existing links work)
+# Phase 6: Implementation (LOCKED)
 
 **Version 1.1.1** (2026-10-10)
 
-**Status:** UNLOCKED. The MVP (milestones M0 to M10) was built on 2026-10-13 in [../../coding/](../../coding/). See [../../coding/CHANGELOG.md](../../coding/CHANGELOG.md).
+**Status:** LOCKED.
 
 Unlocks only when Christian says: "I approve the final blueprint. Begin implementation." (or something equally unambiguous).
 

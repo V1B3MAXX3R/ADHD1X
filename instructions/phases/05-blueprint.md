@@ -2,7 +2,7 @@
 
 **Version 1.1.1** (2026-10-10)
 
-**Status:** Done. Phase 6 implementation has started. Deliverable drafted in four parts: [phase-5-blueprint.md](../phase-5-blueprint.md), [phase-5-technical-spec.md](../phase-5-technical-spec.md), [phase-5-implementation-prompts.md](../phase-5-implementation-prompts.md), [phase-5-coder-rules.md](../phase-5-coder-rules.md). Proposals approved (A115, A116). The MVP built from it is in [../../coding/](../../coding/).
+**Status:** In progress. Deliverable drafted in four parts: [phase-5-blueprint.md](../phase-5-blueprint.md), [phase-5-technical-spec.md](../phase-5-technical-spec.md), [phase-5-implementation-prompts.md](../phase-5-implementation-prompts.md), [phase-5-coder-rules.md](../phase-5-coder-rules.md). Proposals approved (A115, A116). Waiting on Christian's open answers and the exact phrase in A2.
 
 ## Goal
 Turn every approved decision into one buildable spec plus a step-by-step set of Google AI Studio prompts.

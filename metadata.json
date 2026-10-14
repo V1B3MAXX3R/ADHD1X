@@ -1,0 +1,6 @@
+{
+  "name": "ADHD1X",
+  "description": "A calm, guilt-free university school helper and daily plan organizer designed for students with ADHD, autism, or executive dysfunction.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
