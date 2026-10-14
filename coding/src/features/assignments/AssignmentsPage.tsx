@@ -6,7 +6,7 @@ import { Assignment } from '../../shared/data/schemas';
 
 export const AssignmentsPage: React.FC = () => {
   const { id: routeAssignmentId } = useParams<{ id?: string }>();
-  const { assignments, courses, upsertAssignment } = useApp();
+  const { assignments, courses, upsertAssignment, completeAssignmentWithReward } = useApp();
   const [courseFilter, setCourseFilter] = useState('all');
   const [showNotNow, setShowNotNow] = useState(false);
   const [openDetailId, setOpenDetailId] = useState<string | null>(routeAssignmentId ?? null);
@@ -80,11 +80,9 @@ export const AssignmentsPage: React.FC = () => {
           <button
             type="button"
             onClick={() =>
-              void upsertAssignment({
-                ...a,
-                status: a.status === 'done' ? 'todo' : 'done',
-                completedAt: a.status === 'done' ? undefined : new Date().toISOString(),
-              })
+              a.status === 'done'
+                ? void upsertAssignment({ ...a, status: 'todo', completedAt: undefined })
+                : void completeAssignmentWithReward(a)
             }
             className="min-h-[44px] px-4 py-2 rounded border border-border bg-surface"
           >

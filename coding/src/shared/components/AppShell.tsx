@@ -3,6 +3,8 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
 import { getWhyOnNote } from '../../features/quiz/quizRules';
 import { Settings } from '../data/schemas';
+import { SpaceBackground } from '../space/SpaceBackground';
+import { RewardDialog } from '../../features/voyage/RewardDialog';
 
 export const WhyOnNote: React.FC<{
   settingKey: keyof Settings;
@@ -29,7 +31,7 @@ export const AppShell: React.FC<{
   title: string;
   children: React.ReactNode;
 }> = ({ title, children }) => {
-  const { settings, storageBlocked, timer, pauseResumeTimer, stopTimer, startTimer, assignments, blockChangePromptOpen, dismissBlockChangePrompt } = useApp();
+  const { settings, updateSettings, storageBlocked, timer, pauseResumeTimer, stopTimer, startTimer, assignments, blockChangePromptOpen, dismissBlockChangePrompt } = useApp();
   const [helpOpen, setHelpOpen] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
@@ -56,7 +58,8 @@ export const AppShell: React.FC<{
   const isSpace = settings.interfaceStyle === 'space';
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-bg text-text">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-bg text-text relative">
+      <SpaceBackground />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-accent focus:text-on-accent focus:px-4 focus:py-2 focus:rounded"
@@ -66,9 +69,11 @@ export const AppShell: React.FC<{
 
       <nav
         aria-label="Main navigation"
-        className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-surface lg:static lg:w-56 lg:border-t-0 lg:border-r lg:min-h-screen flex lg:flex-col justify-around lg:justify-start p-2 gap-2"
+        className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-surface/95 lg:static lg:w-56 lg:border-t-0 lg:border-r lg:min-h-screen flex lg:flex-col justify-around lg:justify-start p-2 gap-2"
       >
-        <div className="hidden lg:block px-3 py-4 font-bold text-lg">ADHD1X</div>
+        <div className="hidden lg:block px-3 py-4 font-bold text-lg">
+          {isSpace && <span aria-hidden="true">🚀 </span>}ADHD1X
+        </div>
         <NavLink
           to="/today"
           className={({ isActive }) =>
@@ -89,6 +94,16 @@ export const AppShell: React.FC<{
         >
           Assignments
         </NavLink>
+        <NavLink
+          to="/calendar"
+          className={({ isActive }) =>
+            `min-h-[44px] min-w-[44px] px-3 py-2 rounded flex items-center font-medium ${
+              isActive ? 'bg-accent text-on-accent' : 'text-text hover:bg-bg'
+            }`
+          }
+        >
+          Calendar
+        </NavLink>
         {!settings.voyageHidden && (
           <NavLink
             to="/voyage"
@@ -98,6 +113,7 @@ export const AppShell: React.FC<{
               }`
             }
           >
+            {isSpace && <span aria-hidden="true">🪐&nbsp;</span>}
             {isSpace ? 'Voyage' : 'Progress'}
           </NavLink>
         )}
@@ -115,10 +131,19 @@ export const AppShell: React.FC<{
         </NavLink>
       </nav>
 
-      <div className="flex-1 flex flex-col pb-36 lg:pb-24">
-        <header className="flex items-center justify-between border-b border-border px-4 py-3 bg-surface">
+      <div className="flex-1 flex flex-col pb-36 lg:pb-24 relative z-10">
+        <header className="flex items-center justify-between border-b border-border px-4 py-3 bg-surface/90">
           <span className="font-bold lg:hidden">ADHD1X</span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            {/* Changes the look only. It does not change any other setting (A57). */}
+            <button
+              type="button"
+              aria-pressed={isSpace}
+              onClick={() => void updateSettings({ interfaceStyle: isSpace ? 'regular' : 'space' })}
+              className="min-h-[44px] px-3 py-2 rounded border border-border bg-bg text-text text-sm font-medium"
+            >
+              Space mode: {isSpace ? 'on' : 'off'}
+            </button>
             <button
               ref={helpBtnRef}
               type="button"
@@ -257,6 +282,8 @@ export const AppShell: React.FC<{
           </div>
         </aside>
       )}
+
+      <RewardDialog />
 
       {helpOpen && (
         <div

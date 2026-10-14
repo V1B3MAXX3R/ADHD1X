@@ -13,6 +13,7 @@ export const TodayPage: React.FC = () => {
     todayStudyDay,
     saveTodayPlanState,
     upsertAssignment,
+    completeAssignmentWithReward,
     timer,
   } = useApp();
   const navigate = useNavigate();
@@ -322,6 +323,13 @@ export const TodayPage: React.FC = () => {
                               >
                                 Help me start
                               </Link>
+                              <button
+                                type="button"
+                                onClick={() => void completeAssignmentWithReward(entry.assignment)}
+                                className="min-h-[44px] px-3 py-1 rounded border border-border bg-surface text-xs"
+                              >
+                                I finished this
+                              </button>
                               <button
                                 type="button"
                                 disabled={sIdx <= 0}

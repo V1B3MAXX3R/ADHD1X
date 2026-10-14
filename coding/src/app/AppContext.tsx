@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   Assignment,
+  CalendarItem,
   Course,
   FirstMoveRecord,
   QuizAnswerRecord,
@@ -9,13 +10,16 @@ import {
   StudyDay,
 } from '../shared/data/schemas';
 import {
+  clearCalendarItems,
   getAssignments,
+  getCalendarItems,
   getCourses,
   getFirstMoves,
   getQuizAnswers,
   getSettings,
   getStudyDay,
   saveAssignment,
+  saveCalendarItems,
   saveCourse,
   saveFirstMove,
   saveQuizAnswer,
@@ -23,6 +27,8 @@ import {
   saveStudyDay,
 } from '../shared/data/database';
 import { applyQuizAnswersToSettings } from '../features/quiz/quizRules';
+import { pickRandomFunFact } from '../features/voyage/funFacts';
+import { buildCompletionReward, CompletionReward } from '../features/voyage/rewards';
 
 interface TimerState {
   running: boolean;
@@ -41,15 +47,22 @@ interface AppContextValue {
   courses: Course[];
   assignments: Assignment[];
   firstMoves: FirstMoveRecord[];
+  calendarItems: CalendarItem[];
   todayStudyDay: StudyDay | null;
   timer: TimerState;
   blockChangePromptOpen: boolean;
+  completionReward: CompletionReward | null;
+  dismissCompletionReward: () => void;
+  nextRewardFunFact: () => void;
+  completeAssignmentWithReward: (assignment: Assignment) => Promise<void>;
   dismissBlockChangePrompt: () => void;
   updateSettings: (patch: Partial<Settings>, isManual?: boolean) => Promise<void>;
   recordQuizAnswer: (questionId: number, answer: 'yes' | 'no' | 'skipped') => Promise<void>;
   undoQuizSetting: (settingKey: keyof Settings, defaultValue: unknown) => Promise<void>;
   upsertCourse: (c: Course) => Promise<void>;
   upsertAssignment: (a: Assignment) => Promise<void>;
+  saveCalendarBatch: (items: CalendarItem[]) => Promise<void>;
+  removeAllCalendarItems: () => Promise<void>;
   saveTodayPlanState: (day: StudyDay) => Promise<void>;
   cacheFirstMove: (fm: FirstMoveRecord) => Promise<void>;
   startTimer: (assignmentId: string, minutes: number, currentBlock: string | null) => void;
@@ -88,9 +101,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [courses, setCourses] = useState<Course[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [firstMoves, setFirstMoves] = useState<FirstMoveRecord[]>([]);
+  const [calendarItems, setCalendarItems] = useState<CalendarItem[]>([]);
   const [todayStudyDay, setTodayStudyDay] = useState<StudyDay | null>(null);
   const [pendingGeminiAction, setPendingGeminiAction] = useState<(() => void) | null>(null);
   const [blockChangePromptOpen, setBlockChangePromptOpen] = useState(false);
+  const [completionReward, setCompletionReward] = useState<CompletionReward | null>(null);
 
   const [timer, setTimer] = useState<TimerState>(() => {
     const saved = sessionStorage.getItem('adhd1x_timer');
@@ -113,19 +128,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const reloadAll = async () => {
     try {
-      const [s, q, c, a, fm, sd] = await Promise.all([
+      const [s, q, c, a, fm, sd, cal] = await Promise.all([
         getSettings(),
         getQuizAnswers(),
         getCourses(),
         getAssignments(),
         getFirstMoves(),
         getStudyDay(getTodayDateString()),
+        getCalendarItems(),
       ]);
       setSettings(s);
       setQuizAnswers(q);
       setCourses(c);
       setAssignments(a);
       setFirstMoves(fm);
+      setCalendarItems(cal);
       setTodayStudyDay(sd ?? null);
     } catch {
       setStorageBlocked(true);
@@ -212,6 +229,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!storageBlocked) await saveAssignment(a);
   };
 
+  // Marks an assignment finished. In Space style with Celebrations on, also shows the reward (A5, A24, A67).
+  const completeAssignmentWithReward = async (assignment: Assignment) => {
+    const updated: Assignment = { ...assignment, status: 'done', completedAt: new Date().toISOString() };
+    const before = assignments;
+    const after = [...assignments.filter((x) => x.id !== assignment.id), updated];
+    setAssignments(after);
+    if (!storageBlocked) await saveAssignment(updated);
+
+    if (assignment.status !== 'done' && settings.interfaceStyle === 'space' && settings.celebrations) {
+      setCompletionReward(buildCompletionReward(before, after, updated, pickRandomFunFact()));
+    }
+  };
+
+  const saveCalendarBatch = async (items: CalendarItem[]) => {
+    setCalendarItems((prev) => {
+      const ids = new Set(items.map((i) => i.id));
+      return [...prev.filter((x) => !ids.has(x.id)), ...items];
+    });
+    if (!storageBlocked) await saveCalendarItems(items);
+  };
+
+  const removeAllCalendarItems = async () => {
+    setCalendarItems([]);
+    if (!storageBlocked) await clearCalendarItems();
+  };
+
   const saveTodayPlanState = async (day: StudyDay) => {
     setTodayStudyDay(day);
     if (!storageBlocked) await saveStudyDay(day);
@@ -260,15 +303,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         courses,
         assignments,
         firstMoves,
+        calendarItems,
         todayStudyDay,
         timer,
         blockChangePromptOpen,
+        completionReward,
+        dismissCompletionReward: () => setCompletionReward(null),
+        nextRewardFunFact: () =>
+          setCompletionReward((prev) =>
+            prev ? { ...prev, funFact: pickRandomFunFact(prev.funFact.id) } : null,
+          ),
+        completeAssignmentWithReward,
         dismissBlockChangePrompt: () => setBlockChangePromptOpen(false),
         updateSettings,
         recordQuizAnswer,
         undoQuizSetting,
         upsertCourse,
         upsertAssignment,
+        saveCalendarBatch,
+        removeAllCalendarItems,
         saveTodayPlanState,
         cacheFirstMove,
         startTimer,

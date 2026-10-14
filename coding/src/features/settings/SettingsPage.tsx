@@ -146,6 +146,19 @@ export const SettingsPage: React.FC = () => {
                 <WhyOnNote settingKey="theme" defaultValue="normal" />
               </div>
 
+              <div>
+                <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.celebrations}
+                    onChange={(e) => void saveWithConfirmation({ celebrations: e.target.checked })}
+                    className="w-5 h-5"
+                  />
+                  <span>Small celebration when I finish an assignment (Space style shows a fun fact)</span>
+                </label>
+                <WhyOnNote settingKey="celebrations" defaultValue={false} />
+              </div>
+
               <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
                 <input
                   type="checkbox"

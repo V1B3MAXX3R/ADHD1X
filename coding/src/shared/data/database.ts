@@ -1,6 +1,7 @@
 import { openDB, IDBPDatabase } from 'idb';
 import {
   Assignment,
+  CalendarItem,
   Course,
   CURRENT_SCHEMA_VERSION,
   ExportFile,
@@ -33,6 +34,7 @@ export function getDB(): Promise<IDBPDatabase> {
         if (!db.objectStoreNames.contains('voyage')) db.createObjectStore('voyage');
         if (!db.objectStoreNames.contains('logbook')) db.createObjectStore('logbook', { keyPath: 'semesterKey' });
         if (!db.objectStoreNames.contains('deviceSecret')) db.createObjectStore('deviceSecret');
+        if (!db.objectStoreNames.contains('calendarItems')) db.createObjectStore('calendarItems', { keyPath: 'id' });
       },
     });
   }
@@ -143,6 +145,23 @@ export async function getLogbook(): Promise<LogbookRecord[]> {
   return db.getAll('logbook');
 }
 
+export async function getCalendarItems(): Promise<CalendarItem[]> {
+  const db = await getDB();
+  return db.getAll('calendarItems');
+}
+
+export async function saveCalendarItems(items: CalendarItem[]): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction('calendarItems', 'readwrite');
+  for (const item of items) await tx.store.put(item);
+  await tx.done;
+}
+
+export async function clearCalendarItems(): Promise<void> {
+  const db = await getDB();
+  await db.clear('calendarItems');
+}
+
 export async function getAccessCode(): Promise<string> {
   const db = await getDB();
   return (await db.get('deviceSecret', 'accessCode')) ?? '';
@@ -154,7 +173,7 @@ export async function saveAccessCode(code: string): Promise<void> {
 }
 
 export async function exportAllData(): Promise<ExportFile> {
-  const [settings, quizAnswers, courses, assignments, sessions, firstMoves, studyDays, voyage, logbook] =
+  const [settings, quizAnswers, courses, assignments, sessions, firstMoves, studyDays, voyage, logbook, calendarItems] =
     await Promise.all([
       getSettings(),
       getQuizAnswers(),
@@ -165,6 +184,7 @@ export async function exportAllData(): Promise<ExportFile> {
       (await getDB()).getAll('studyDays'),
       getVoyage(),
       getLogbook(),
+      getCalendarItems(),
     ]);
 
   return {
@@ -181,6 +201,7 @@ export async function exportAllData(): Promise<ExportFile> {
       studyDays,
       voyage,
       logbook,
+      calendarItems,
     },
   };
 }
@@ -231,6 +252,7 @@ export async function importReplaceData(file: ExportFile): Promise<void> {
     'studyDays',
     'voyage',
     'logbook',
+    'calendarItems',
   ];
   for (const s of storesToClear) {
     await db.clear(s);
@@ -244,6 +266,7 @@ export async function importReplaceData(file: ExportFile): Promise<void> {
   for (const d of file.data.studyDays) await db.put('studyDays', d);
   if (file.data.voyage) await db.put('voyage', file.data.voyage, 'current');
   for (const l of file.data.logbook) await db.put('logbook', l);
+  for (const c of file.data.calendarItems) await db.put('calendarItems', c);
 }
 
 export async function deleteAllData(): Promise<void> {

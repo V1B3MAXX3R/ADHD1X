@@ -1,4 +1,4 @@
-# coding/
+﻿# coding/
 
 **Version 1.1.1** (2026-10-10)
 
@@ -9,7 +9,7 @@ Source code, unit tests, software architecture files for the ADHD1X website. Pha
 | Folder | What it holds |
 |---|---|
 | `src/app/` | App routes and global state |
-| `src/features/` | One folder per part of the website: `today`, `courses`, `assignments`, `helpMeStart`, `help`, `onboarding`, `quiz`, `settings`, `voyage` |
+| `src/features/` | One folder per part of the website: `today`, `courses`, `assignments`, `calendar`, `helpMeStart`, `help`, `onboarding`, `quiz`, `settings`, `voyage` |
 | `src/shared/` | Pieces used by many parts: `components` (app shell), `data` (saved data and schemas), `ai` (Gemini client), `logic` (time estimates), `styles` |
 | `server/`, `api/` | Server-only Gemini rules and the serverless endpoint |
 | `tests/unit/` | Unit tests |
@@ -28,3 +28,4 @@ Copy `.env.example` to `.env` and fill in `GEMINI_API_KEY` and `ACCESS_CODE` for
 ## Changelog
 
 The main changelog is [CHANGELOG.md](CHANGELOG.md), and every part folder has its own `CHANGELOG.md`. Every code change gets an entry (decision A17).
+

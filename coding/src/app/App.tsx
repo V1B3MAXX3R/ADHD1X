@@ -8,6 +8,7 @@ import { TodayPage } from '../features/today/TodayPage';
 import { HelpMeStartPage } from '../features/helpMeStart/HelpMeStartPage';
 import { AssignmentsPage } from '../features/assignments/AssignmentsPage';
 import { VoyagePage } from '../features/voyage/VoyagePage';
+import { CalendarPage } from '../features/calendar/CalendarPage';
 import { SettingsPage } from '../features/settings/SettingsPage';
 import { CampusSupportPage, HelpOverviewPage } from '../features/help/HelpPages';
 import { AppShell } from '../shared/components/AppShell';
@@ -74,6 +75,14 @@ export const AppRoutes: React.FC = () => (
       element={
         <RequireAgeGate>
           <AssignmentsPage />
+        </RequireAgeGate>
+      }
+    />
+    <Route
+      path="/calendar"
+      element={
+        <RequireAgeGate>
+          <CalendarPage />
         </RequireAgeGate>
       }
     />

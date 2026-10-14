@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA_VERSION = 1;
+export const CURRENT_SCHEMA_VERSION = 2;
 
 export const AssignmentTypeSchema = z.enum([
   'discussion',
@@ -105,7 +105,8 @@ export const AssignmentSchema = z.object({
   notNow: z.boolean().default(false),
   addedLate: z.boolean().default(false),
   note: z.string().optional(),
-  source: z.enum(['syllabus', 'manual']),
+  source: z.enum(['syllabus', 'manual', 'calendar']),
+  calendarId: z.string().optional(),
   createdAt: z.string(),
   completedAt: z.string().optional(),
 });
@@ -167,6 +168,22 @@ export const LogbookRecordSchema = z.object({
 });
 export type LogbookRecord = z.infer<typeof LogbookRecordSchema>;
 
+export const CalendarItemSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1).max(200),
+  courseName: z.string().max(120).optional(),
+  kind: z.enum(['assignment', 'event']),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  description: z.string().max(2000).optional(),
+  repeats: z.boolean().default(false),
+  importedAt: z.string(),
+  isNew: z.boolean().default(true),
+  status: z.enum(['open', 'added', 'hidden']).default('open'),
+  assignmentId: z.string().optional(),
+});
+export type CalendarItem = z.infer<typeof CalendarItemSchema>;
+
 export const ExportFileSchema = z.object({
   app: z.literal('ADHD1X'),
   exportSchemaVersion: z.number().int(),
@@ -181,6 +198,7 @@ export const ExportFileSchema = z.object({
     studyDays: z.array(StudyDaySchema),
     voyage: VoyageRecordSchema.nullable(),
     logbook: z.array(LogbookRecordSchema),
+    calendarItems: z.array(CalendarItemSchema).default([]),
   }),
 });
 export type ExportFile = z.infer<typeof ExportFileSchema>;

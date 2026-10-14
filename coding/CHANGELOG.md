@@ -1,4 +1,4 @@
-# ADHD1X Coding Changelog
+﻿# ADHD1X Coding Changelog
 
 Every code change gets an entry here, in the same step as the change (decision A17).
 Newest entries go at the top. Each part of the website also has its own `CHANGELOG.md` with the detail for that part; this file keeps one summary entry per change and lists which parts it touched.
@@ -9,6 +9,7 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 |---|---|
 | App routes and global state | [src/app/](src/app/CHANGELOG.md) |
 | Today page and day-plan engine | [src/features/today/](src/features/today/CHANGELOG.md) |
+| Calendar import (new and upcoming assignments) | [src/features/calendar/](src/features/calendar/CHANGELOG.md) |
 | Course and syllabus setup | [src/features/courses/](src/features/courses/CHANGELOG.md) |
 | Assignments list | [src/features/assignments/](src/features/assignments/CHANGELOG.md) |
 | Help me start (templates and tips) | [src/features/helpMeStart/](src/features/helpMeStart/CHANGELOG.md) |
@@ -34,6 +35,20 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 
 ## Entries
 
+## 2026-10-13 - Space UI overhaul
+- Made by: Claude (from Christian's Space UI script)
+- Parts: voyage, shared, app, today, assignments, settings
+- Changed: Space background (stars and planets), Voyage page with solar system map, spacecraft, planet badges, mission log and fun facts (FF1 to FF20), a finish reward pop-up, a header Space mode switch, an "I finished this" button on Today, and a Celebrations switch in Settings. Code was split into small files per part instead of the script's few large ones.
+- Why: Christian's Space UI overhaul (A53, A54, A57, A67, A77).
+- Notes: The pasted script was cut off partway through the Voyage page, and used old file paths that would have overwritten the Calendar section, so it was rebuilt by hand. Changes from the script to follow the decision log: the reward shows only with Celebrations on (A5, A24, A67); the header switch changes only the look (A57); Space is not forced as the starting style. 6 new tests. Case 3 plan-engine test still open.
+
+## 2026-10-13 - Calendar section
+- Made by: Claude
+- Parts: calendar (new), app, shared
+- Changed: New Calendar page (`/calendar`) with .ics import, a review step, New assignments and Coming up lists. Added `calendarItems` storage and bumped the saved-data version from 1 to 2 (existing saved data is kept; old export files still import). Assignments now have source "calendar" and an optional `calendarId`. Calendar link added to the main navigation.
+- Why: Christian asked for calendar import (Google Calendar, Canvas and similar) that shows new and upcoming assignments and helps the study plan.
+- Notes: Snapshot import only, no live link. 12 new unit tests (`tests/unit/calendar.test.ts`). Case 3 plan-engine test still open.
+
 ## 2026-10-13 - Project cleanup: one folder per part of the website
 - Made by: Claude
 - Parts: all
@@ -47,3 +62,5 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 - Changed: Created full `coding/` workspace including `package.json`, `vite.config.ts`, `tsconfig.json`, `vercel.json`, `scripts/secret-scan.mjs`, `scripts/check-contrast.mjs`, `public/manifest.json`, `public/sw.js`, data layer, pure logic (`planEngine.ts`, `quizRules.ts`, `estimates.ts`, `voyage.ts`, `templates.ts`), serverless Gemini proxy (`api/ai/[preset].ts`, `server/`), accessible UI components, all MVP routes, and unit test suites (`tests/`). (File locations here are as of that date; see the cleanup entry above for the new layout.)
 - Why: Implements approved Phase 5 Blueprint (FR-01 to FR-22) and Technical Spec (A1 to A117, T70 to T79).
 - Notes: Run `npm install && npm run check` locally in VS Code to execute typecheck, unit tests, contrast check, and secret scan.
+
+
