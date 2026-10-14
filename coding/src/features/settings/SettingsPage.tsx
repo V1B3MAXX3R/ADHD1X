@@ -20,6 +20,7 @@ const SECTIONS = [
   ['timer', 'Timer'],
   ['help-tone', 'Help and tone'],
   ['answers', 'My answers'],
+  ['catch-up', 'Catch Up'],
   ['privacy', 'Privacy'],
   ['about', 'About'],
 ] as const;
@@ -158,6 +159,16 @@ export const SettingsPage: React.FC = () => {
                 </label>
                 <WhyOnNote settingKey="celebrations" defaultValue={false} />
               </div>
+
+              <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.showClock}
+                  onChange={(e) => void saveWithConfirmation({ showClock: e.target.checked })}
+                  className="w-5 h-5"
+                />
+                <span>Show the date and time at the top of the page</span>
+              </label>
 
               <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
                 <input
@@ -399,6 +410,28 @@ export const SettingsPage: React.FC = () => {
                 className="inline-block min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
               >
                 Review quiz questions
+              </Link>
+            </>
+          )}
+
+          {section === 'catch-up' && (
+            <>
+              <h2 className="text-lg font-bold">
+                {settings.interfaceStyle === 'space' ? 'Hyperdrive (Catch Up)' : 'Catch-up mode'}
+              </h2>
+              <p className="text-sm text-muted">
+                Set a target grade, compare Aggressive, Normal and Chill paces, and switch the mode on or off. It is
+                off until you turn it on, and it is never turned on for you. Grade math happens on this device and
+                grades are never sent to Gemini.
+              </p>
+              <p className="text-sm">
+                Right now it is <strong>{settings.catchUp.on ? 'on' : 'off'}</strong>.
+              </p>
+              <Link
+                to="/catch-up"
+                className="inline-block min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
+              >
+                Open {settings.interfaceStyle === 'space' ? 'Hyperdrive' : 'Catch-up mode'} calculator and switch
               </Link>
             </>
           )}

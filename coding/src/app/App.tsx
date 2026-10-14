@@ -9,6 +9,9 @@ import { HelpMeStartPage } from '../features/helpMeStart/HelpMeStartPage';
 import { AssignmentsPage } from '../features/assignments/AssignmentsPage';
 import { VoyagePage } from '../features/voyage/VoyagePage';
 import { CalendarPage } from '../features/calendar/CalendarPage';
+import { CatchUpPage } from '../features/catchUp/CatchUpPage';
+import { CatalogPage } from '../features/catalog/CatalogPage';
+import { ClockProvider } from '../shared/clock/ClockContext';
 import { SettingsPage } from '../features/settings/SettingsPage';
 import { CampusSupportPage, HelpOverviewPage } from '../features/help/HelpPages';
 import { AppShell } from '../shared/components/AppShell';
@@ -79,6 +82,14 @@ export const AppRoutes: React.FC = () => (
       }
     />
     <Route
+      path="/catch-up"
+      element={
+        <RequireAgeGate>
+          <CatchUpPage />
+        </RequireAgeGate>
+      }
+    />
+    <Route
       path="/calendar"
       element={
         <RequireAgeGate>
@@ -102,6 +113,7 @@ export const AppRoutes: React.FC = () => (
         </RequireAgeGate>
       }
     />
+    {import.meta.env.DEV && <Route path="/catalog" element={<CatalogPage />} />}
     <Route path="/privacy" element={<Navigate to="/settings/privacy" replace />} />
     <Route path="/help" element={<HelpOverviewPage />} />
     <Route path="/help/campus-support" element={<CampusSupportPage />} />
@@ -110,9 +122,11 @@ export const AppRoutes: React.FC = () => (
 );
 
 export const App: React.FC = () => (
-  <AppProvider>
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
-  </AppProvider>
+  <ClockProvider>
+    <AppProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AppProvider>
+  </ClockProvider>
 );

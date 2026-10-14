@@ -27,6 +27,7 @@ import {
   saveStudyDay,
 } from '../shared/data/database';
 import { applyQuizAnswersToSettings } from '../features/quiz/quizRules';
+import { blockAt, formatLocalDate, minutesOfDay } from '../shared/clock/clockLogic';
 import { pickRandomFunFact } from '../features/voyage/funFacts';
 import { buildCompletionReward, CompletionReward } from '../features/voyage/rewards';
 
@@ -74,23 +75,14 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+// One-off readers for event handlers and starting values. Screens that must stay current as time
+// passes use useClock() instead.
 export function getTodayDateString(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return formatLocalDate(new Date());
 }
 
 export function getCurrentBlockName(settings: Settings): string | null {
-  const d = new Date();
-  const mins = d.getHours() * 60 + d.getMinutes();
-  for (const [name, win] of Object.entries(settings.blockWindows)) {
-    const [sh, sm] = win.start.split(':').map(Number);
-    const [eh, em] = win.end.split(':').map(Number);
-    if (mins >= sh * 60 + sm && mins < eh * 60 + em) return name;
-  }
-  return null;
+  return blockAt(settings.blockWindows, minutesOfDay(new Date()));
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

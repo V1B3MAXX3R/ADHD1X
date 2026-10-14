@@ -1,6 +1,7 @@
 import React from 'react';
 import { useApp } from '../../app/AppContext';
 import { BackgroundPlanets, PlanetDefs } from './BackgroundPlanets';
+import { HyperdriveStreaks } from './HyperdriveStreaks';
 import { NebulaDefs, Starfield } from './Starfield';
 
 // Decorative only. Shown in Space style, and never in the Low (low stimulation) theme (A35, A57).
@@ -17,6 +18,7 @@ export const SpaceBackground: React.FC = () => {
         </defs>
         <Starfield />
         <BackgroundPlanets />
+        {settings.catchUp.on && <HyperdriveStreaks />}
       </svg>
     </div>
   );

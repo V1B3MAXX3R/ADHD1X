@@ -41,6 +41,9 @@ export interface PlanEngineInput {
   prefs: PlanPrefs;
   manualMoves: ManualMove[];
   pinned?: string | null;
+  // After 8 pm the engine returns an empty plan unless the person asked for one. When they did,
+  // blocks are planned at full length, because the real time has passed every block.
+  afterHoursConfirmed?: boolean;
 }
 
 export interface PlannedSessionItem {
@@ -126,7 +129,10 @@ export function buildDayPlan(input: PlanEngineInput): PlanEngineOutput {
   const nowMinutes = parseTimeMinutes(nowTimePart.slice(0, 5));
   const todayDays = dayEpoch(todayDate);
 
-  if (nowMinutes >= PLAN_CONSTANTS.AFTER_HOURS_MINUTES) {
+  const isAfterHours = nowMinutes >= PLAN_CONSTANTS.AFTER_HOURS_MINUTES;
+  const planFromMinutes = isAfterHours && input.afterHoursConfirmed ? 0 : nowMinutes;
+
+  if (isAfterHours && !input.afterHoursConfirmed) {
     return {
       blocks: [],
       items: [],
@@ -257,11 +263,11 @@ export function buildDayPlan(input: PlanEngineInput): PlanEngineOutput {
     const win = input.blockWindows[b];
     const startMins = parseTimeMinutes(win.start);
     const endMins = parseTimeMinutes(win.end);
-    if (nowMinutes >= endMins) {
+    if (planFromMinutes >= endMins) {
       blockCapacities.set(b, 0);
       continue;
     }
-    const effectiveStart = Math.max(startMins, nowMinutes);
+    const effectiveStart = Math.max(startMins, planFromMinutes);
     const rawWindow = Math.max(0, endMins - effectiveStart);
     const cap = roundDownTo15(rawWindow * PLAN_CONSTANTS.CAPACITY_RATIO);
     blockCapacities.set(b, cap);
@@ -439,7 +445,7 @@ export function buildDayPlan(input: PlanEngineInput): PlanEngineOutput {
   let cursorMinutes: number | null = null;
   for (const pb of finalBlocks) {
     if (pb.entries.length === 0) continue;
-    const blockStart = Math.max(nowMinutes, parseTimeMinutes(pb.windowStart));
+    const blockStart = Math.max(planFromMinutes, parseTimeMinutes(pb.windowStart));
     cursorMinutes = cursorMinutes === null ? blockStart : Math.max(cursorMinutes, blockStart);
     for (const entry of pb.entries) {
       cursorMinutes += entry.kind === 'session' ? entry.minutesPlanned : entry.minutes;

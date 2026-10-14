@@ -3,10 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../../shared/components/AppShell';
 import { useApp } from '../../app/AppContext';
 import { Assignment } from '../../shared/data/schemas';
+import { useClock } from '../../shared/clock/ClockContext';
+import { formatDueIn } from '../../shared/clock/clockLogic';
 
 export const AssignmentsPage: React.FC = () => {
   const { id: routeAssignmentId } = useParams<{ id?: string }>();
   const { assignments, courses, upsertAssignment, completeAssignmentWithReward } = useApp();
+  const { now } = useClock();
   const [courseFilter, setCourseFilter] = useState('all');
   const [showNotNow, setShowNotNow] = useState(false);
   const [openDetailId, setOpenDetailId] = useState<string | null>(routeAssignmentId ?? null);
@@ -184,7 +187,7 @@ export const AssignmentsPage: React.FC = () => {
                     <div>
                       <span className="font-bold">{a.name}</span>
                       <span className="text-sm text-muted ml-2">
-                        due {a.dueDate} • {a.points ?? 0} pts • {a.status}
+                        {formatDueIn(a.dueDate, a.dueTime, now)} ({a.dueDate}) • {a.points ?? 0} pts • {a.status}
                       </span>
                     </div>
                     <div className="flex gap-2">

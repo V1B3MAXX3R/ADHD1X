@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppShell } from '../../shared/components/AppShell';
-import { useApp, getTodayDateString } from '../../app/AppContext';
+import { useApp } from '../../app/AppContext';
+import { useClock } from '../../shared/clock/ClockContext';
 import { CalendarItemRow } from './CalendarItemRow';
 import { ImportPanel } from './ImportPanel';
 import { formatDayHeading, getNewAssignments, getUpcomingByDay, UPCOMING_DAYS } from './calendarLogic';
@@ -9,7 +10,7 @@ export const CalendarPage: React.FC = () => {
   const { calendarItems, assignments, saveCalendarBatch, removeAllCalendarItems } = useApp();
   const [message, setMessage] = useState('');
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const today = getTodayDateString();
+  const { today } = useClock();
 
   const newItems = getNewAssignments(calendarItems, assignments, today);
   const upcoming = getUpcomingByDay(calendarItems, today);

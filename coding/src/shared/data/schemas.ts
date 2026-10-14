@@ -36,6 +36,7 @@ export const SettingsSchema = z.object({
   spacing: z.enum(['normal', 'roomy']).default('normal'),
   motion: z.boolean().default(true),
   fewerOnScreen: z.boolean().default(false),
+  showClock: z.boolean().default(true),
   todayView: z.enum(['list', 'card']).default('list'),
   timerDisplay: z.enum(['number', 'bar', 'hidden']).default('bar'),
   usualBlocks: z.array(BlockNameSchema).default(['Morning', 'Evening']),
@@ -67,6 +68,17 @@ export const SettingsSchema = z.object({
   quietEnd: z.string().default('06:00'),
   notificationSounds: z.boolean().default(false),
   voyageHidden: z.boolean().default(false),
+  // Catch Up (called Hyperdrive in Space style). Only the person switches it on (A39). Local only (A36).
+  catchUp: z
+    .object({
+      on: z.boolean().default(false),
+      targetGrade: z.number().min(0).max(100).default(85),
+      pace: z.enum(['aggressive', 'normal', 'chill']).default('normal'),
+      selectedCourseId: z.string().default('all'),
+      quickCurrentPercent: z.number().min(0).max(100).optional(),
+      quickRemainingWeight: z.number().min(0).max(100).optional(),
+    })
+    .default({ on: false, targetGrade: 85, pace: 'normal', selectedCourseId: 'all' }),
   manualOverrides: z.array(z.string()).default([]),
   exportPromptShown: z.boolean().default(false),
 });
@@ -96,6 +108,7 @@ export const AssignmentSchema = z.object({
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   dueTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   points: z.number().min(0).max(1000).optional(),
+  earnedPoints: z.number().min(0).max(1000).optional(), // Your own score. Stays on this device, never sent to Gemini (A36).
   percentOfGrade: z.number().min(0).max(100).optional(),
   detailsText: z.string().optional(),
   estimateMinutes: z.number().int().min(5).max(2400),

@@ -5,6 +5,9 @@ import { getWhyOnNote } from '../../features/quiz/quizRules';
 import { Settings } from '../data/schemas';
 import { SpaceBackground } from '../space/SpaceBackground';
 import { RewardDialog } from '../../features/voyage/RewardDialog';
+import { ClockDisplay } from '../clock/ClockDisplay';
+import { ClockNotices } from '../clock/ClockNotices';
+import { ExportReminder } from '../../features/settings/ExportReminder';
 
 export const WhyOnNote: React.FC<{
   settingKey: keyof Settings;
@@ -135,6 +138,7 @@ export const AppShell: React.FC<{
         <header className="flex items-center justify-between border-b border-border px-4 py-3 bg-surface/90">
           <span className="font-bold lg:hidden">ADHD1X</span>
           <div className="ml-auto flex items-center gap-2">
+            <ClockDisplay />
             {/* Changes the look only. It does not change any other setting (A57). */}
             <button
               type="button"
@@ -160,6 +164,9 @@ export const AppShell: React.FC<{
             Data cannot be saved permanently in this private browser window, but you can keep using ADHD1X for this session.
           </div>
         )}
+
+        <ClockNotices />
+        <ExportReminder />
 
         {blockChangePromptOpen && (
           <div

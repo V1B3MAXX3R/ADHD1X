@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppShell } from '../../shared/components/AppShell';
-import { useApp, getTodayDateString } from '../../app/AppContext';
+import { useApp } from '../../app/AppContext';
+import { useClock } from '../../shared/clock/ClockContext';
+import { blockAt, describeNow, format12h, formatDueIn, minutesOfDay, toLocalIso, formatLocalTime } from '../../shared/clock/clockLogic';
 import { buildDayPlan, PlannedSessionItem } from './planEngine';
+import { CatchUpBar } from './CatchUpBar';
 import { BlockName } from '../../shared/data/schemas';
 
 export const TodayPage: React.FC = () => {
@@ -10,7 +13,7 @@ export const TodayPage: React.FC = () => {
     settings,
     courses,
     assignments,
-    todayStudyDay,
+    todayStudyDay: loadedStudyDay,
     saveTodayPlanState,
     upsertAssignment,
     completeAssignmentWithReward,
@@ -23,13 +26,21 @@ export const TodayPage: React.FC = () => {
   const [confirmAfter8pm, setConfirmAfter8pm] = useState(false);
   const [dismissedBreaks, setDismissedBreaks] = useState<Set<string>>(new Set());
 
-  const todayStr = getTodayDateString();
+  const clock = useClock();
+  const todayStr = clock.today;
+  // The saved plan state is for the day it was made. After midnight it no longer applies.
+  const todayStudyDay = loadedStudyDay && loadedStudyDay.date === todayStr ? loadedStudyDay : null;
   const selectedBlocks: BlockName[] = todayStudyDay?.blocks ?? settings.usualBlocks;
   const manualMoves = todayStudyDay?.manualMoves ?? [];
 
-  const nowHour = new Date().getHours();
-  const nowStr =
-    nowHour >= 20 && !confirmAfter8pm ? `${todayStr}T20:30` : `${todayStr}T09:00`;
+  // The plan is made for the time you opened it, and only changes when you tap "Update my plan".
+  // Nothing rearranges by itself as the minutes pass (A73).
+  const [planTime, setPlanTime] = useState(() => clock.now);
+  const planIsStale =
+    toLocalIso(planTime).slice(0, 10) !== todayStr ||
+    blockAt(settings.blockWindows, minutesOfDay(planTime)) !== blockAt(settings.blockWindows, clock.minutes) ||
+    Math.abs(clock.now.getTime() - planTime.getTime()) >= 60 * 60 * 1000;
+  const nowStr = toLocalIso(planTime);
 
   const plan = useMemo(
     () =>
@@ -38,7 +49,8 @@ export const TodayPage: React.FC = () => {
         selectedBlocks,
         blockWindows: settings.blockWindows,
         usualBlocks: settings.usualBlocks,
-        assignments,
+        // In Catch Up, unfinished work from earlier dates joins the plan (A39, A40).
+        assignments: settings.catchUp.on ? assignments.map((a) => ({ ...a, addedLate: true })) : assignments,
         courses,
         prefs: {
           spacingEarly: settings.spacingEarly,
@@ -48,9 +60,12 @@ export const TodayPage: React.FC = () => {
         },
         manualMoves,
         pinned: timer.running ? timer.assignmentId : null,
+        afterHoursConfirmed: confirmAfter8pm,
       }),
-    [nowStr, selectedBlocks, settings, assignments, courses, manualMoves, timer],
+    [nowStr, selectedBlocks, settings, assignments, courses, manualMoves, timer, confirmAfter8pm],
   );
+
+  const rightNow = describeNow(settings.blockWindows, selectedBlocks, clock.minutes);
 
   const toggleBlock = async (b: BlockName) => {
     const nextBlocks = selectedBlocks.includes(b)
@@ -86,6 +101,7 @@ export const TodayPage: React.FC = () => {
     return (
       <AppShell title={`Today, ${todayStr}`}>
         <div className="space-y-4">
+          <CatchUpBar />
           <div className="flex flex-wrap items-center justify-between gap-2 bg-surface p-4 rounded border border-border">
             <p className="text-sm">Showing your upcoming assignments by due date.</p>
             <button
@@ -116,7 +132,9 @@ export const TodayPage: React.FC = () => {
                 >
                   <div>
                     <span className="font-bold">{a.name}</span>
-                    <span className="text-sm text-muted ml-2">Due {a.dueDate}</span>
+                    <span className="text-sm text-muted ml-2">
+                      {formatDueIn(a.dueDate, a.dueTime, clock.now)}
+                    </span>
                   </div>
                   <div className="flex gap-2">
                     <Link
@@ -145,6 +163,29 @@ export const TodayPage: React.FC = () => {
   return (
     <AppShell title={`Today, ${todayStr}`}>
       <div className="space-y-6">
+        <CatchUpBar />
+        <section aria-label="Right now" className="p-4 rounded border border-border bg-surface space-y-2">
+          <p className="font-medium">{rightNow.headline}</p>
+          <p className="text-sm text-muted">{rightNow.detail}</p>
+          {planIsStale && (
+            <div
+              role="status"
+              className="p-3 rounded border border-border bg-bg text-sm flex flex-wrap items-center justify-between gap-2"
+            >
+              <span>
+                This plan was made at {format12h(formatLocalTime(planTime))}. It is {format12h(clock.time)} now.
+              </span>
+              <button
+                type="button"
+                onClick={() => setPlanTime(clock.now)}
+                className="min-h-[44px] px-3 py-1 rounded bg-accent text-on-accent font-medium"
+              >
+                Update my plan
+              </button>
+            </div>
+          )}
+        </section>
+
         <section
           aria-label="Study blocks"
           className="p-4 rounded border border-border bg-surface space-y-3"
@@ -210,7 +251,7 @@ export const TodayPage: React.FC = () => {
               onClick={() => setConfirmAfter8pm(true)}
               className="min-h-[44px] px-4 py-2 rounded bg-accent text-on-accent font-medium"
             >
-              Show a plan for tonight anyway
+              Show a plan anyway (blocks at full length)
             </button>
           </div>
         )}
@@ -220,7 +261,7 @@ export const TodayPage: React.FC = () => {
             <span className="text-xs uppercase tracking-wide text-muted">Do this next</span>
             <h2 className="text-xl font-bold">{plan.items[0].assignment.name}</h2>
             <p className="text-sm text-muted">
-              About {plan.items[0].minutesPlanned} min today • Due {plan.items[0].assignment.dueDate}
+              About {plan.items[0].minutesPlanned} min today • {formatDueIn(plan.items[0].assignment.dueDate, plan.items[0].assignment.dueTime, clock.now)}
               {plan.items[0].urgent ? ' * due tomorrow/soon' : ''}
             </p>
             <div className="flex flex-wrap gap-3">
@@ -306,7 +347,7 @@ export const TodayPage: React.FC = () => {
                             <div>
                               <span className="font-bold">{entry.assignment.name}</span>
                               <span className="text-sm text-muted ml-2">
-                                ~{entry.minutesPlanned}m • due {entry.assignment.dueDate}
+                                ~{entry.minutesPlanned}m • {formatDueIn(entry.assignment.dueDate, entry.assignment.dueTime, clock.now)}
                                 {entry.continues ? ' (continues)' : ''}
                               </span>
                               {entry.urgent && (

@@ -10,6 +10,7 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | App routes and global state | [src/app/](src/app/CHANGELOG.md) |
 | Today page and day-plan engine | [src/features/today/](src/features/today/CHANGELOG.md) |
 | Calendar import (new and upcoming assignments) | [src/features/calendar/](src/features/calendar/CHANGELOG.md) |
+| Catch Up / Hyperdrive | [src/features/catchUp/](src/features/catchUp/CHANGELOG.md) |
 | Course and syllabus setup | [src/features/courses/](src/features/courses/CHANGELOG.md) |
 | Assignments list | [src/features/assignments/](src/features/assignments/CHANGELOG.md) |
 | Help me start (templates and tips) | [src/features/helpMeStart/](src/features/helpMeStart/CHANGELOG.md) |
@@ -18,7 +19,10 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 | Personalization quiz rules | [src/features/quiz/](src/features/quiz/CHANGELOG.md) |
 | Settings, export, import, delete | [src/features/settings/](src/features/settings/CHANGELOG.md) |
 | Space voyage | [src/features/voyage/](src/features/voyage/CHANGELOG.md) |
+| Clock (real-world time, reminders) | [src/shared/clock/](src/shared/clock/CHANGELOG.md) |
 | Shared (app shell, data, Gemini client, estimates, styles) | [src/shared/](src/shared/CHANGELOG.md) |
+| Component catalog (developer page) | [src/features/catalog/](src/features/catalog/CHANGELOG.md) |
+| Tests (unit, fixtures, end-to-end) | [tests/](tests/CHANGELOG.md) |
 | Gemini rules and safety (server) | [server/](server/CHANGELOG.md) |
 | Gemini endpoint (API) | [api/](api/CHANGELOG.md) |
 
@@ -35,6 +39,30 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 
 ## Entries
 
+## 2026-10-13 - Catch Up / Hyperdrive
+- Made by: Claude (from Gemini's Bucket 2 Part 2 files)
+- Parts: catchUp (new), today, settings, shared, app, tests
+- Changed: New Catch Up page and Settings section: on/off switch, target-grade calculator (quick percent or per-assignment scores), Aggressive/Normal/Chill paces with real day counts, and a Due soonest list. Today shows a status bar and includes earlier unfinished work, only while it is on. Space style adds still warp streaks. Grade math is local and never goes to Gemini.
+- Why: Decisions A35 to A40, A56, A81.
+- Notes: Adapted to follow the decision log: never offered automatically (A39), picking a pace does not turn it on, the days estimate uses work due within 14 days, calmer wording. Case for you to confirm: the pace sizes (4, 2.5 and 1.25 hours a day) came from Gemini, since A81 gives no numbers. FR-15 in the blueprint still says this section is hidden in the MVP. 10 new unit tests, 1 new browser test.
+## 2026-10-13 - Gemini Bucket 1 files placed and merged
+- Made by: Claude (from Gemini's files)
+- Parts: catalog (new), tests, settings, clock, shared, app
+- Changed: Placed the files Gemini wrote into the current folder layout: component catalog page (dev only), 10 fake syllabi and 10 fake assignments with safety tests, Playwright end-to-end and axe accessibility tests (now also scanning Today, Assignments, Calendar, Voyage and Settings in regular and Space style), and the manual checklist (extended with Calendar and clock checks). Gemini's ReminderBanners was not added as a second copy: its tone wording and "today's blocks" idea were merged into the clock reminders, and its one-week backup offer became `ExportReminder`.
+- Why: Completes the remaining MVP items (M2, M6, M9, M10; prompts P04, P10, P13, P15, P16).
+- Notes: Gemini's changelog entry listed old file paths and was not pasted in. 3 end-to-end tests and 47 unit tests pass. The manual checklist still needs a person on a real Windows PC and iPhone.
+## 2026-10-13 - Real-world clock
+- Made by: Claude
+- Parts: clock (new), today, calendar, assignments, settings, app, shared
+- Changed: Shared clock (device time) used across the app. Today's plan now starts from the real time instead of a fixed 9:00 am, with a "Right now" line and an "Update my plan" button so the plan never rearranges by itself. Plain-words due times on Today and Assignments. Calendar lists roll over at midnight. Optional in-app reminders (5-minute block heads-up, due soon) that respect quiet hours, with an optional browser pop-up. Header date and time with a Settings switch. After 8 pm the "plan anyway" button now plans full-length blocks.
+- Why: Christian asked for a real-world clock that affects the study plan and other features.
+- Notes: 14 new tests (43 total, all pass). Reminders use the existing quiz-driven settings (due reminders, heads-up, quiet hours, where to show). Browser pop-ups are untested in a real browser.
+## 2026-10-13 - Fixed test Case 3 (day-plan shortfall)
+- Made by: Claude
+- Parts: today (tests only)
+- Changed: In `tests/unit/planEngine.test.ts` the test Morning window is now 07:00 to 12:00 (was 06:00 to 12:00), matching the spec's "full Morning = 5 hours x 85% = 255 minutes" (Technical Spec section 1.3). No engine or spec change.
+- Why: Case 3 expected 1.5 hours short but the old test window gave 0.8. Christian chose to fix the test fixture.
+- Notes: All 29 unit tests pass. Closes the open item from the earlier entries.
 ## 2026-10-13 - Space UI overhaul
 - Made by: Claude (from Christian's Space UI script)
 - Parts: voyage, shared, app, today, assignments, settings
@@ -62,5 +90,9 @@ Newest entries go at the top. Each part of the website also has its own `CHANGEL
 - Changed: Created full `coding/` workspace including `package.json`, `vite.config.ts`, `tsconfig.json`, `vercel.json`, `scripts/secret-scan.mjs`, `scripts/check-contrast.mjs`, `public/manifest.json`, `public/sw.js`, data layer, pure logic (`planEngine.ts`, `quizRules.ts`, `estimates.ts`, `voyage.ts`, `templates.ts`), serverless Gemini proxy (`api/ai/[preset].ts`, `server/`), accessible UI components, all MVP routes, and unit test suites (`tests/`). (File locations here are as of that date; see the cleanup entry above for the new layout.)
 - Why: Implements approved Phase 5 Blueprint (FR-01 to FR-22) and Technical Spec (A1 to A117, T70 to T79).
 - Notes: Run `npm install && npm run check` locally in VS Code to execute typecheck, unit tests, contrast check, and secret scan.
+
+
+
+
 
 
